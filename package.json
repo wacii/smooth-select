@@ -1,0 +1,23 @@
+{
+  "name": "smooth-select",
+  "version": "0.0.0",
+  "description": "Text selection by entire words.",
+  "main": "smooth-select.js",
+  "scripts": {
+    "test": "jasmine-node test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wacii/smooth-select.git"
+  },
+  "keywords": [
+    "text",
+    "selection"
+  ],
+  "author": "wacii",
+  "license": "MIT",
+  "devDependencies": {
+    "jasmine-node": "^1.14.5",
+    "jsdom": "^3.1.2"
+  }
+}
