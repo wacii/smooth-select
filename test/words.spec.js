@@ -34,4 +34,12 @@ describe('Words()', function() {
       expect(this.words.getText(0, 2)).toEqual('a b c');
     })
   });
+
+  describe('#indexOf()', function() {
+    it('returns index of provided element', function() {
+      expect(this.words.indexOf(this.el1)).toEqual(0);
+      expect(this.words.indexOf(this.el2)).toEqual(1);
+      expect(this.words.indexOf(null)).toEqual(-1);
+    })
+  })
 });

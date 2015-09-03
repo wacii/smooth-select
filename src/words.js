@@ -36,4 +36,14 @@ Words.prototype.getText = function getText(start, end) {
   return text.trim();
 }
 
+/**
+ * Return index of provided element in split words.
+ *
+ * @param {DOMElement} el
+ * @return {Number} index of provided element or -1
+ */
+Words.prototype.indexOf = function indexOf(el) {
+  return Array.prototype.indexOf.call(this.els, el);
+}
+
 module.exports = Words;
