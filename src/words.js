@@ -7,8 +7,7 @@ var splitter = require('../src/splitter');
  * @params {HTMLElement} el
  */
 function Words(el) {
-  this.els = splitter(el);
-  this.selecting = false;
+  Array.prototype.push.apply(this, splitter(el));
 }
 
 /**
@@ -29,25 +28,7 @@ Words.prototype.getText = function getText(begin, end) {
   return text.trim();
 }
 
-/**
- * Return index of provided element in split words.
- *
- * @param {DOMElement} el
- * @return {Number} index of provided element or -1
- */
-Words.prototype.indexOf = function indexOf(el) {
-  return Array.prototype.indexOf.call(this.els, el);
-}
-
-/**
- * Returns word elements in specified range.
- *
- * @param {Number} start - Starting index of range.
- * @param {Number} end - Final index of range.
- * @return {Array}
- */
-Words.prototype.slice = function range(begin, end) {
-  return Array.prototype.slice.call(this.els, begin, end);
-}
+Words.prototype.indexOf = Array.prototype.indexOf;
+Words.prototype.slice = Array.prototype.slice;
 
 module.exports = Words;

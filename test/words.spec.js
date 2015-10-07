@@ -6,8 +6,8 @@ describe('Words()', function() {
     var doc = jsdom('<p id="text">a b c</p>');
     this.words = new Words(doc.getElementById('text'));
 
-    this.el1 = this.words.els[0];
-    this.el2 = this.words.els[1];
+    this.word1 = this.words[0];
+    this.word2 = this.words[1];
   });
 
   describe('#getText()', function() {
@@ -20,8 +20,8 @@ describe('Words()', function() {
 
   describe('#indexOf()', function() {
     it('returns index of provided element', function() {
-      expect(this.words.indexOf(this.el1)).toEqual(0);
-      expect(this.words.indexOf(this.el2)).toEqual(1);
+      expect(this.words.indexOf(this.word1)).toEqual(0);
+      expect(this.words.indexOf(this.word2)).toEqual(1);
       expect(this.words.indexOf(null)).toEqual(-1);
     })
   });
@@ -30,7 +30,7 @@ describe('Words()', function() {
     it('returns elements in specified range', function() {
       expect(this.words.slice(0, 2).length).toEqual(2);
       expect(this.words.slice(1, 2).length).toEqual(1);
-      expect(this.words.slice(1, 2)[0]).toEqual(this.el2);
+      expect(this.words.slice(1, 2)[0]).toEqual(this.word2);
     })
   });
 });

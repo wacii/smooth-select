@@ -1,5 +1,3 @@
-// TODO: move from wrapper to two sets of marker spans flanking content
-
 /**
  * Represents a "selection" signified by that wrapped in a span.
  *
@@ -15,10 +13,16 @@ function Selection(el, words) {
 
   this.words = words;
 
-  // TODO: replace fake
-  this.wrapper = { appendChild: function() {} };
+  // span marking the start of a selection
+  this.beginSelection = document.createElement('span');
+  this.beginSelection.className = 'ss-start-selection';
 
-  this.updateWrapper();
+  // span marking the end of a selection
+  this.endSelection = document.createElement('span');
+  this.endSelection.className = 'ss-end-selection';
+
+  // place marker spans
+  this._updateWrapper();
 }
 
 Object.defineProperty(Selection.prototype, 'currentIndex', {
@@ -33,24 +37,13 @@ Object.defineProperty(Selection.prototype, 'currentIndex', {
 });
 
 /**
- * Add current selection to wrapper.
- */
-Selection.prototype.updateWrapper = function updateWrapper() {
-  var selectedWords = this.words.slice(this._begin(), this._end());
-
-  var len = selectedWords.length;
-  for (var i = 0; i < len; i++)
-    this.wrapper.appendChild(selectedWords[0]);
-};
-
-/**
  * Updates current selection.
  *
  * @param {HTMLElement} el
  */
-Selection.prototype.updateIndex = function updateIndex(el) {
+Selection.prototype.updateSelection = function updateIndex(el) {
   this.currentIndex = this.words.indexOf(el);
-  this.updateWrapper();
+  this._updateWrapper();
 };
 
 /**
@@ -59,7 +52,20 @@ Selection.prototype.updateIndex = function updateIndex(el) {
  * @return {String}
  */
 Selection.prototype.getText = function getText() {
-  return this.words.getText(this._begin(), this._end());
+  return this.words.getText(this._begin(), this._end() + 1);
+};
+
+/**
+ * Add current selection to wrapper.
+ *
+ * @private
+ */
+Selection.prototype._updateWrapper = function updateWrapper() {
+  var word = this.words[this._begin()];
+  word.parentNode.insertBefore(this.beginSelection, word);
+
+  word = this.words[this._end()];
+  word.parentNode.insertBefore(this.endSelection, word.nextSibling);
 };
 
 /**
@@ -72,13 +78,12 @@ Selection.prototype._begin = function _begin() {
 }
 
 /**
- * Returns ending index of represent range, plus one.
+ * Returns ending index of represent range.
  *
- * The plus one is because the end parameter in slice is exclusive.
  * @private
  */
 Selection.prototype._end = function _end() {
-  return Math.max(this.initialIndex, this.currentIndex) + 1;
+  return Math.max(this.initialIndex, this.currentIndex);
 }
 
 module.exports = Selection;
