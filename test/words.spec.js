@@ -10,28 +10,11 @@ describe('Words()', function() {
     this.el2 = this.words.els[1];
   });
 
-  describe('#toggleSelections()', function() {
-    it('toggles selected class name on all elements', function () {
-      expect(this.el1.classList.contains('ss-selected')).toBe(false);
-      expect(this.el2.classList.contains('ss-selected')).toBe(false);
-
-      this.words.toggleSelections([0, 1]);
-
-      expect(this.el1.classList.contains('ss-selected')).toBe(true);
-      expect(this.el2.classList.contains('ss-selected')).toBe(true);
-
-      this.words.toggleSelections([1]);
-
-      expect(this.el1.classList.contains('ss-selected')).toBe(true);
-      expect(this.el2.classList.contains('ss-selected')).toBe(false);
-    })
-  });
-
   describe('#getText()', function() {
     it('returns text corresponding to range of indices', function() {
-      expect(this.words.getText(0, 1)).toEqual('a b');
-      expect(this.words.getText(1, 2)).toEqual('b c');
-      expect(this.words.getText(0, 2)).toEqual('a b c');
+      expect(this.words.getText(0, 2)).toEqual('a b');
+      expect(this.words.getText(1, 3)).toEqual('b c');
+      expect(this.words.getText(0, 3)).toEqual('a b c');
     })
   });
 
@@ -41,5 +24,13 @@ describe('Words()', function() {
       expect(this.words.indexOf(this.el2)).toEqual(1);
       expect(this.words.indexOf(null)).toEqual(-1);
     })
-  })
+  });
+
+  describe('#slice()', function() {
+    it('returns elements in specified range', function() {
+      expect(this.words.slice(0, 2).length).toEqual(2);
+      expect(this.words.slice(1, 2).length).toEqual(1);
+      expect(this.words.slice(1, 2)[0]).toEqual(this.el2);
+    })
+  });
 });

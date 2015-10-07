@@ -1,9 +1,7 @@
-var diff = require('./utils').diff;
-var append = require('./utils').append;
-var range = require('./utils').range;
+// TODO: move from wrapper to two sets of marker spans flanking content
 
 /**
- * Manages model of selection. Communicates changes to instance of Words.
+ * Represents a "selection" signified by that wrapped in a span.
  *
  * @param {HTMLElement} el - Element containing start of the selection.
  * @param {Words} words
@@ -12,46 +10,48 @@ var range = require('./utils').range;
 function Selection(el, words) {
   var index = words.indexOf(el);
 
-  this.startingIndex = index;
-  this.previousIndex = index;
+  this.initialIndex = index;
   this.currentIndex = index;
 
   this.words = words;
+
+  // TODO: replace fake
+  this.wrapper = { appendChild: function() {} };
+
+  this.updateWrapper();
 }
 
+Object.defineProperty(Selection.prototype, 'currentIndex', {
+  get: function() {
+    return this._initialIndex;
+  },
+  set: function(value) {
+    if (value === -1)
+      throw 'element not found';
+    return this._initialIndex = value;
+  }
+});
+
 /**
- * Updates current index and pushes resulting changes to words.
+ * Add current selection to wrapper.
+ */
+Selection.prototype.updateWrapper = function updateWrapper() {
+  var selectedWords = this.words.slice(this._begin(), this._end());
+
+  var len = selectedWords.length;
+  for (var i = 0; i < len; i++)
+    this.wrapper.appendChild(selectedWords[0]);
+};
+
+/**
+ * Updates current selection.
  *
  * @param {HTMLElement} el
  */
 Selection.prototype.updateIndex = function updateIndex(el) {
-  var index = this.words.indexOf(el);
-
-  this.previousIndex = this.currentIndex;
-  this.currentIndex = index;
-
-  this.words.toggleSelections(this.changedIndices());
-}
-
-/**
- * Returns indices of words whose selection status has changed since.
- *
- * @return {Array}
- * @private
- */
-Selection.prototype.changedIndices = function changedIndices() {
-  if (this.previousIndex === this.currentIndex) return [];
-
-  var indices = [];
-
-  var prevRange = range(this.startingIndex, this.previousIndex);
-  var currRange = range(this.startingIndex, this.currentIndex);
-
-  append(indices, diff(prevRange, currRange));
-  append(indices, diff(currRange, prevRange));
-
-  return indices;
-}
+  this.currentIndex = this.words.indexOf(el);
+  this.updateWrapper();
+};
 
 /**
  * Returns text content of selection.
@@ -59,11 +59,26 @@ Selection.prototype.changedIndices = function changedIndices() {
  * @return {String}
  */
 Selection.prototype.getText = function getText() {
-  if (this.startingIndex < this.currentIndex) {
-    return this.words.getText(this.startingIndex, this.currentIndex);
-  } else {
-    return this.words.getText(this.currentIndex, this.startingIndex);
-  }
+  return this.words.getText(this._begin(), this._end());
+};
+
+/**
+ * Returns starting index of represented range.
+ *
+ * @private
+ */
+Selection.prototype._begin = function _begin() {
+  return Math.min(this.initialIndex, this.currentIndex);
+}
+
+/**
+ * Returns ending index of represent range, plus one.
+ *
+ * The plus one is because the end parameter in slice is exclusive.
+ * @private
+ */
+Selection.prototype._end = function _end() {
+  return Math.max(this.initialIndex, this.currentIndex) + 1;
 }
 
 module.exports = Selection;
