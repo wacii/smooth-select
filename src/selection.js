@@ -1,4 +1,6 @@
 // TODO: enforce indices in bounds
+// TODO: rename updateSelection to update
+// TODO: rename getText to toString
 
 /**
  * Represents a "selection" signified by that wrapped in a span.
@@ -15,6 +17,9 @@ function Selection(el, words) {
   this.previousIndex = index;
 
   this.words = words;
+
+  this.updateCallbacks = [];
+  this.finalizeCallbacks = [];
 
   // span marking the start of a selection
   this.beginSelection = document.createElement('span');
@@ -48,9 +53,27 @@ Selection.prototype.updateSelection = function updateIndex(el) {
   this.previousIndex = this.currentIndex;
   this.currentIndex = this.words.indexOf(el);
 
-  if (this.currentIndex !== this.previousIndex)
+  if (this.currentIndex !== this.previousIndex) {
     this._updateWrapper();
+
+    var len = this.updateCallbacks.length;
+    for (var i = 0; i < len; i++)
+      this.updateCallbacks[i].call(this);
+  }
 };
+
+/**
+ * Prevent selection from being modified.
+ *
+ * Note that DOM Manipulation only happens when current index changes.
+ */
+Selection.prototype.finalize = function finalize() {
+  Object.freeze(this);
+
+  var len = this.finalizeCallbacks.length;
+  for (var i = 0; i < len; i++)
+    this.finalizeCallbacks[i].call(this);
+}
 
 /**
  * Returns text content of selection.
@@ -67,6 +90,24 @@ Selection.prototype.getText = function getText() {
 
   return textArray.join(' ');
 };
+
+/**
+ * Register one or more callbacks to be run when the selection updates.
+ *
+ * @param {...Function} callback
+ */
+Selection.prototype.onUpdate = function onUpdate(callback) {
+  Array.prototype.push.apply(this.updateCallbacks, arguments);
+}
+
+/**
+ * Register one or more callbacks to be run when the selection finalizes.
+ *
+ * @param {...Function} callback
+ */
+Selection.prototype.onFinalize = function onFinalize(/* callbacks */) {
+  Array.prototype.push.apply(this.finalizeCallbacks, arguments);
+}
 
 /**
  * Add current selection to wrapper.

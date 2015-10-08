@@ -33,9 +33,7 @@ smoothSelect = function smoothSelect(el) {
   function endSelection(event) {
     if (!selecting) return;
 
-    // prevent further modification to selection
-    // effective because dom manipulation only occurs when index changes
-    Object.freeze(currentSelection);
+    currentSelection.finalize();
     selecting = false;
   }
 }

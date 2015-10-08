@@ -62,6 +62,14 @@ describe('Selection()', function() {
         this.selection.updateSelection(this.selection.words[1]);
         expect(this.selection._updateWrapper).toHaveBeenCalled();
       });
+
+      it('runs callbacks', function() {
+        var callback = jasmine.createSpy();
+        this.selection.onUpdate(callback);
+
+        this.selection.updateSelection(this.selection.words[1]);
+        expect(callback).toHaveBeenCalled();
+      });
     });
 
     describe('when current index stays the same', function() {
@@ -69,6 +77,29 @@ describe('Selection()', function() {
         this.selection.updateSelection(this.selection.words[0]);
         expect(this.selection._updateWrapper).not.toHaveBeenCalled();
       });
+
+      it('does not run callbacks', function() {
+        var callback = jasmine.createSpy();
+        this.selection.onUpdate(callback);
+
+        this.selection.updateSelection(this.selection.words[0]);
+        expect(callback).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('#finalize()', function() {
+    it('freezes the selection', function() {
+      this.selection.finalize();
+      expect(Object.isFrozen(this.selection)).toBe(true);
+    });
+
+    it('runs callbacks', function() {
+      var callback = jasmine.createSpy();
+      this.selection.onFinalize(callback);
+
+      this.selection.finalize();
+      expect(callback).toHaveBeenCalled();
     });
   });
 
