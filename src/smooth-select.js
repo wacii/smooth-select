@@ -1,10 +1,10 @@
 var Selection = require('./selection');
-var Words = require('./words');
+var splitter = require('./splitter');
 
 smoothSelect = function smoothSelect(el) {
   var currentSelection = null;
 
-  var words = new Words(el);
+  var words = new splitter(el);
   var selecting = false
 
   el.addEventListener('mousedown', startSelection);

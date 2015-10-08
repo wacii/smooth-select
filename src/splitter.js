@@ -2,7 +2,7 @@
  * Wraps words of provided element in spans
  *
  * @param {HTMLElement} el
- * @return {HTMLCollection} resulting spans
+ * @return {Array} resulting spans
  * @private
  */
 function splitter(el) {
@@ -18,7 +18,8 @@ function splitter(el) {
 
   el.innerHTML = html;
 
-  return el.getElementsByClassName('ss-word');
+  var els = el.getElementsByClassName('ss-word');
+  return Array.prototype.slice.call(els);
 }
 
 module.exports = splitter;

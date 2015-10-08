@@ -48,7 +48,7 @@ Object.defineProperty(Selection.prototype, 'currentIndex', {
 Selection.prototype.updateSelection = function updateIndex(el) {
   this.previousIndex = this.currentIndex;
   this.currentIndex = this.words.indexOf(el);
-  
+
   if (this.currentIndex !== this.previousIndex)
     this._updateWrapper();
 };
@@ -59,7 +59,14 @@ Selection.prototype.updateSelection = function updateIndex(el) {
  * @return {String}
  */
 Selection.prototype.getText = function getText() {
-  return this.words.getText(this._begin(), this._end() + 1);
+  var selectedWords = this.words.slice(this._begin(), this._end() + 1);
+  var textArray = [];
+
+  var len = selectedWords.length
+  for (var i = 0; i < len; i++)
+    textArray.push(selectedWords[i].textContent)
+
+  return textArray.join(' ');
 };
 
 /**

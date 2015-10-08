@@ -1,5 +1,5 @@
 var Selection = require('../src/selection');
-var Words = require('../src/words');
+var splitter = require('../src/splitter');
 var jsdom = require('jsdom').jsdom;
 
 describe('Selection()', function() {
@@ -9,7 +9,7 @@ describe('Selection()', function() {
     this.doc = jsdom('<p id="text">a b c</p>');
     global.document = this.doc;
 
-    var words = new Words(this.doc.getElementById('text'));
+    var words = splitter(this.doc.getElementById('text'));
     this.selection = new Selection(words[index], words);
   });
 
@@ -74,19 +74,15 @@ describe('Selection()', function() {
 
   describe('#getText()', function() {
     it('returns text based on starting and current index', function() {
-      spyOn(this.selection.words, 'getText');
+      this.selection.initialIndex = 1;
+      this.selection.currentIndex = 2;
+
+      expect(this.selection.getText()).toEqual('b c');
 
       this.selection.initialIndex = 1;
-      this.selection.currentIndex = 3;
+      this.selection.currentIndex = 0;
 
-      this.selection.getText()
-      expect(this.selection.words.getText).toHaveBeenCalledWith(1, 4)
-
-      this.selection.initialIndex = 3;
-      this.selection.currentIndex = 1;
-
-      this.selection.getText()
-      expect(this.selection.words.getText).toHaveBeenCalledWith(1, 4)
+      expect(this.selection.getText()).toEqual('a b');
     });
   });
 });
