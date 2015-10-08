@@ -1,3 +1,7 @@
+// TODO: enforce indices in bounds
+// TODO: finalized state, as in selection made
+// TODO: only update selection if index has changed
+
 /**
  * Represents a "selection" signified by that wrapped in a span.
  *
