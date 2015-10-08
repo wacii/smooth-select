@@ -1,4 +1,5 @@
 // TODO: enforce indices in bounds
+var events = require('./events')
 
 /**
  * Represents a "selection" signified by that wrapped in a span.
@@ -98,41 +99,18 @@ Selection.prototype.toString = function toString() {
 };
 
 /**
- * Register one or more listeners for provided event.
+ * Register event listeners.
  *
- * @param {string} name - The name of an event.
- * @param {...Function} callback
+ * @see events.on
  */
-Selection.prototype.on = function on(name, callback) {
-  var handlers = this.events[name] || (this.events[name] = []);
-  var callbacks = Array.prototype.slice.call(arguments, 1);
-  Array.prototype.push.apply(handlers, callbacks);
-};
+Selection.prototype.on = events.on;
 
 /**
- * Removes listeners for a particular event.
+ * Remove event listeners.
  *
- * If a callback is provided, the corresponding listener is removed, if found.
- * Otherwise all listeners are removed for the specified event.
- *
- * @param {string} name - The name of an event.
- * @param {Function} callback
+ * @see events.on
  */
-Selection.prototype.off = function off(name, callback) {
-  var handlers = this.events[name];
-
-  // if there are no registered listeners nothing needs to be done
-  if (handlers === undefined || handlers.length === 0) return;
-
-  // if no callback supplied, remove all listeners
-  if (callback === undefined)
-    return handlers.splice(0, handlers.length);
-
-  // remove supplied callback if found
-  var index = handlers.indexOf(callback);
-  if (index !== -1)
-    handlers.splice(index, 1);
-};
+Selection.prototype.off = events.off;
 
 /**
  * Add current selection to wrapper.

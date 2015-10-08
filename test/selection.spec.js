@@ -1,5 +1,6 @@
 var Selection = require('../src/selection');
 var splitter = require('../src/splitter');
+var events = require('../src/events');
 var jsdom = require('jsdom').jsdom;
 
 describe('Selection()', function() {
@@ -118,65 +119,22 @@ describe('Selection()', function() {
   });
 
   describe('#on()', function() {
-    beforeEach(function() {
-      this.cb1 = function() {};
-      this.cb2 = function() {};
-      this.cb3 = function() {};
-
-      expect(this.selection.events.update).toBeUndefined();
-      expect(this.selection.events.finalize).toBeUndefined();
+    it('uses method from events module', function() {
+      expect(this.selection.on).toEqual(events.on);
     });
 
-    it('registers listener on event', function() {
-      var events = this.selection.events;
-
-      this.selection.on('update', this.cb1);
-      expect(events.update[0]).toEqual(this.cb1);
-
-      this.selection.on('update', this.cb2);
-      expect(events.update.length).toEqual(2);
-      expect(events.update[1]).toEqual(this.cb2);
-
-      this.selection.on('finalize', this.cb3);
-      expect(events.update.length).toEqual(2);
-      expect(events.finalize[0]).toEqual(this.cb3);
-    });
-
-    it('registers multiple listeners on event', function() {
-      var events = this.selection.events;
-
-      this.selection.on('update', this.cb1, this.cb2);
-      expect(events.update[0]).toEqual(this.cb1);
-      expect(events.update[1]).toEqual(this.cb2);
+    it('has an events object to store listeners', function() {
+      expect(typeof this.selection.events).toEqual('object');
     });
   });
 
   describe('#off()', function() {
-    beforeEach(function() {
-      this.cb1 = function() {};
-      this.cb2 = function() {};
-
-      this.selection.on('update', this.cb1, this.cb2);
-      this.selection.on('finalize', this.cb1, this.cb2);
+    it('uses method from events module', function() {
+      expect(this.selection.off).toEqual(events.off);
     });
 
-    it('removes specified listener from event', function() {
-      var events = this.selection.events;
-
-      this.selection.off('update', this.cb1);
-      expect(events.update.length).toEqual(1);
-      expect(events.update[0]).toEqual(this.cb2);
-      expect(events.finalize.length).toEqual(2);
-    });
-
-    describe('when callback not specified', function() {
-      it('removes all listeners from event', function() {
-        var events = this.selection.events;
-
-        this.selection.off('update');
-        expect(events.update.length).toEqual(0);
-        expect(events.finalize.length).toEqual(2);
-      });
+    it('has an events object to store listeners', function() {
+      expect(typeof this.selection.events).toEqual('object');
     });
   });
 });
