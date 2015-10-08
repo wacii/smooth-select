@@ -1,5 +1,4 @@
 // TODO: enforce indices in bounds
-// TODO: finalized state, as in selection made
 
 /**
  * Represents a "selection" signified by that wrapped in a span.

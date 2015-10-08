@@ -26,15 +26,15 @@ describe('smoothSelect()', function() {
     expect(spans[2].textContent).toEqual('b');
     expect(spans[3].className).toEqual('ss-end-selection');
 
-    // event = doc.createEvent('MouseEvent');
-    // event.initEvent('mouseup', true, true);
-    // doc.dispatchEvent(event);
-    // //
-    // event = doc.createEvent('MouseEvent');
-    // event.initEvent('mousemove', true, true);
-    // words[2].dispatchEvent(event);
-    // //
-    // spans = doc.getElementsByTagName('span');
-    // expect(spans[3].className).toEqual('ss-end-selection');
+    event = doc.createEvent('MouseEvent');
+    event.initEvent('mouseup', true, true);
+    doc.dispatchEvent(event);
+    //
+    event = doc.createEvent('MouseEvent');
+    event.initEvent('mousemove', true, true);
+    words[2].dispatchEvent(event);
+    //
+    spans = doc.getElementsByTagName('span');
+    expect(spans[3].className).toEqual('ss-end-selection');
   });
 });

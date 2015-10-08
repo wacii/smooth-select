@@ -9,7 +9,7 @@ smoothSelect = function smoothSelect(el) {
 
   el.addEventListener('mousedown', startSelection);
   el.addEventListener('mousemove', updateSelection);
-  el.addEventListener('mouseup', endSelection);
+  document.addEventListener('mouseup', endSelection);
 
   function startSelection(event) {
     if (selecting) return;
@@ -33,9 +33,9 @@ smoothSelect = function smoothSelect(el) {
   function endSelection(event) {
     if (!selecting) return;
 
-    var el = event.target;
-    if (el.className !== 'ss-word') return;
-
+    // prevent further modification to selection
+    // effective because dom manipulation only occurs when index changes
+    Object.freeze(currentSelection);
     selecting = false;
   }
 }
