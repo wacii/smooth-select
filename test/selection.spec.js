@@ -65,7 +65,7 @@ describe('Selection()', function() {
 
       it('runs callbacks', function() {
         var callback = jasmine.createSpy();
-        this.selection.onUpdate(callback);
+        this.selection.on('update', callback);
 
         this.selection.updateSelection(this.selection.words[1]);
         expect(callback).toHaveBeenCalled();
@@ -80,7 +80,7 @@ describe('Selection()', function() {
 
       it('does not run callbacks', function() {
         var callback = jasmine.createSpy();
-        this.selection.onUpdate(callback);
+        this.selection.on('update', callback);
 
         this.selection.updateSelection(this.selection.words[0]);
         expect(callback).not.toHaveBeenCalled();
@@ -96,7 +96,7 @@ describe('Selection()', function() {
 
     it('runs callbacks', function() {
       var callback = jasmine.createSpy();
-      this.selection.onFinalize(callback);
+      this.selection.on('finalize', callback);
 
       this.selection.finalize();
       expect(callback).toHaveBeenCalled();
@@ -114,6 +114,69 @@ describe('Selection()', function() {
       this.selection.currentIndex = 0;
 
       expect(this.selection.getText()).toEqual('a b');
+    });
+  });
+
+  describe('#on()', function() {
+    beforeEach(function() {
+      this.cb1 = function() {};
+      this.cb2 = function() {};
+      this.cb3 = function() {};
+
+      expect(this.selection.events.update).toBeUndefined();
+      expect(this.selection.events.finalize).toBeUndefined();
+    });
+
+    it('registers listener on event', function() {
+      var events = this.selection.events;
+
+      this.selection.on('update', this.cb1);
+      expect(events.update[0]).toEqual(this.cb1);
+
+      this.selection.on('update', this.cb2);
+      expect(events.update.length).toEqual(2);
+      expect(events.update[1]).toEqual(this.cb2);
+
+      this.selection.on('finalize', this.cb3);
+      expect(events.update.length).toEqual(2);
+      expect(events.finalize[0]).toEqual(this.cb3);
+    });
+
+    it('registers multiple listeners on event', function() {
+      var events = this.selection.events;
+
+      this.selection.on('update', this.cb1, this.cb2);
+      expect(events.update[0]).toEqual(this.cb1);
+      expect(events.update[1]).toEqual(this.cb2);
+    });
+  });
+
+  describe('#off()', function() {
+    beforeEach(function() {
+      this.cb1 = function() {};
+      this.cb2 = function() {};
+
+      this.selection.on('update', this.cb1, this.cb2);
+      this.selection.on('finalize', this.cb1, this.cb2);
+    });
+
+    it('removes specified listener from event', function() {
+      var events = this.selection.events;
+
+      this.selection.off('update', this.cb1);
+      expect(events.update.length).toEqual(1);
+      expect(events.update[0]).toEqual(this.cb2);
+      expect(events.finalize.length).toEqual(2);
+    });
+
+    describe('when callback not specified', function() {
+      it('removes all listeners from event', function() {
+        var events = this.selection.events;
+
+        this.selection.off('update');
+        expect(events.update.length).toEqual(0);
+        expect(events.finalize.length).toEqual(2);
+      });
     });
   });
 });

@@ -18,8 +18,8 @@ function Selection(el, words) {
 
   this.words = words;
 
-  this.updateCallbacks = [];
-  this.finalizeCallbacks = [];
+  // store handlers for various events
+  this.events = {};
 
   // span marking the start of a selection
   this.beginSelection = document.createElement('span');
@@ -53,12 +53,15 @@ Selection.prototype.updateSelection = function updateIndex(el) {
   this.previousIndex = this.currentIndex;
   this.currentIndex = this.words.indexOf(el);
 
+  // if selection has actually changed adjust markers and run callbacks
   if (this.currentIndex !== this.previousIndex) {
     this._updateWrapper();
 
-    var len = this.updateCallbacks.length;
+    // run update callbacks
+    var handlers = this.events['update'] || [];
+    var len = handlers.length;
     for (var i = 0; i < len; i++)
-      this.updateCallbacks[i].call(this);
+      handlers[i].call(this);
   }
 };
 
@@ -70,9 +73,14 @@ Selection.prototype.updateSelection = function updateIndex(el) {
 Selection.prototype.finalize = function finalize() {
   Object.freeze(this);
 
-  var len = this.finalizeCallbacks.length;
+  // run finalize callbacks
+  var handlers = this.events['finalize'] || [];
+  var len = handlers.length;
   for (var i = 0; i < len; i++)
-    this.finalizeCallbacks[i].call(this);
+    handlers[i].call(this);
+
+  // remove listeners
+  this.events = {};
 }
 
 /**
@@ -92,22 +100,41 @@ Selection.prototype.getText = function getText() {
 };
 
 /**
- * Register one or more callbacks to be run when the selection updates.
+ * Register one or more listeners for provided event.
  *
+ * @param {string} name - The name of an event.
  * @param {...Function} callback
  */
-Selection.prototype.onUpdate = function onUpdate(callback) {
-  Array.prototype.push.apply(this.updateCallbacks, arguments);
-}
+Selection.prototype.on = function on(name, callback) {
+  var handlers = this.events[name] || (this.events[name] = []);
+  var callbacks = Array.prototype.slice.call(arguments, 1);
+  Array.prototype.push.apply(handlers, callbacks);
+};
 
 /**
- * Register one or more callbacks to be run when the selection finalizes.
+ * Removes listeners for a particular event.
  *
- * @param {...Function} callback
+ * If a callback is provided, the corresponding listener is removed, if found.
+ * Otherwise all listeners are removed for the specified event.
+ *
+ * @param {string} name - The name of an event.
+ * @param {Function} callback
  */
-Selection.prototype.onFinalize = function onFinalize(/* callbacks */) {
-  Array.prototype.push.apply(this.finalizeCallbacks, arguments);
-}
+Selection.prototype.off = function off(name, callback) {
+  var handlers = this.events[name];
+
+  // if there are no registered listeners nothing needs to be done
+  if (handlers === undefined || handlers.length === 0) return;
+
+  // if no callback supplied, remove all listeners
+  if (callback === undefined)
+    return handlers.splice(0, handlers.length);
+
+  // remove supplied callback if found
+  var index = handlers.indexOf(callback);
+  if (index !== -1)
+    handlers.splice(index, 1);
+};
 
 /**
  * Add current selection to wrapper.
@@ -119,6 +146,7 @@ Selection.prototype._updateWrapper = function updateWrapper() {
   word.parentNode.insertBefore(this.beginSelection, word);
 
   word = this.words[this._end()];
+  // there is no insertAfter(), so insert before next sibling
   word.parentNode.insertBefore(this.endSelection, word.nextSibling);
 };
 
