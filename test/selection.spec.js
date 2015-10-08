@@ -27,12 +27,12 @@ describe('Selection()', function() {
     expect(spans[2].className).toEqual('ss-end-selection');
     var el = this.doc.getElementById('text')
 
-    this.selection.updateSelection(this.selection.words[1]);
+    this.selection.update(this.selection.words[1]);
     spans = this.doc.getElementsByTagName('span');
     expect(spans[2].textContent).toEqual('b');
     expect(spans[3].className).toEqual('ss-end-selection');
 
-    this.selection.updateSelection(this.selection.words[2]);
+    this.selection.update(this.selection.words[2]);
     spans = this.doc.getElementsByTagName('span');
     expect(spans[3].textContent).toEqual('c');
     expect(spans[4].className).toEqual('ss-end-selection');
@@ -47,19 +47,19 @@ describe('Selection()', function() {
     });
   });
 
-  describe('#updateSelection()', function() {
+  describe('#update()', function() {
     beforeEach(function() {
       spyOn(this.selection, '_updateWrapper');
     });
 
     it('updates current index', function() {
-      this.selection.updateSelection(this.selection.words[1]);
+      this.selection.update(this.selection.words[1]);
       expect(this.selection.currentIndex).toEqual(1)
     });
 
     describe('when current index changes', function() {
       it('updates wrapper', function() {
-        this.selection.updateSelection(this.selection.words[1]);
+        this.selection.update(this.selection.words[1]);
         expect(this.selection._updateWrapper).toHaveBeenCalled();
       });
 
@@ -67,14 +67,14 @@ describe('Selection()', function() {
         var callback = jasmine.createSpy();
         this.selection.on('update', callback);
 
-        this.selection.updateSelection(this.selection.words[1]);
+        this.selection.update(this.selection.words[1]);
         expect(callback).toHaveBeenCalled();
       });
     });
 
     describe('when current index stays the same', function() {
       it('does not update wrapper', function() {
-        this.selection.updateSelection(this.selection.words[0]);
+        this.selection.update(this.selection.words[0]);
         expect(this.selection._updateWrapper).not.toHaveBeenCalled();
       });
 
@@ -82,7 +82,7 @@ describe('Selection()', function() {
         var callback = jasmine.createSpy();
         this.selection.on('update', callback);
 
-        this.selection.updateSelection(this.selection.words[0]);
+        this.selection.update(this.selection.words[0]);
         expect(callback).not.toHaveBeenCalled();
       });
     });
@@ -103,17 +103,17 @@ describe('Selection()', function() {
     });
   });
 
-  describe('#getText()', function() {
+  describe('#toString()', function() {
     it('returns text based on starting and current index', function() {
       this.selection.initialIndex = 1;
       this.selection.currentIndex = 2;
 
-      expect(this.selection.getText()).toEqual('b c');
+      expect(this.selection.toString()).toEqual('b c');
 
       this.selection.initialIndex = 1;
       this.selection.currentIndex = 0;
 
-      expect(this.selection.getText()).toEqual('a b');
+      expect(this.selection.toString()).toEqual('a b');
     });
   });
 

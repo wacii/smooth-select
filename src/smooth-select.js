@@ -27,7 +27,7 @@ smoothSelect = function smoothSelect(el) {
     var el = event.target;
     if (el.className !== 'ss-word') return;
 
-    currentSelection.updateSelection(el);
+    currentSelection.update(el);
   }
 
   function endSelection(event) {

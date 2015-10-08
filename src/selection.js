@@ -1,6 +1,4 @@
 // TODO: enforce indices in bounds
-// TODO: rename updateSelection to update
-// TODO: rename getText to toString
 
 /**
  * Represents a "selection" signified by that wrapped in a span.
@@ -49,7 +47,7 @@ Object.defineProperty(Selection.prototype, 'currentIndex', {
  *
  * @param {HTMLElement} el
  */
-Selection.prototype.updateSelection = function updateIndex(el) {
+Selection.prototype.update = function updateIndex(el) {
   this.previousIndex = this.currentIndex;
   this.currentIndex = this.words.indexOf(el);
 
@@ -88,7 +86,7 @@ Selection.prototype.finalize = function finalize() {
  *
  * @return {String}
  */
-Selection.prototype.getText = function getText() {
+Selection.prototype.toString = function toString() {
   var selectedWords = this.words.slice(this._begin(), this._end() + 1);
   var textArray = [];
 
