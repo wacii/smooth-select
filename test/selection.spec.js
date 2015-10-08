@@ -57,9 +57,18 @@ describe('Selection()', function() {
       expect(this.selection.currentIndex).toEqual(1)
     });
 
-    it('updates wrapper', function() {
-      this.selection.updateSelection(this.selection.words[0]);
-      expect(this.selection._updateWrapper).toHaveBeenCalled();
+    describe('when current index changes', function() {
+      it('updates wrapper', function() {
+        this.selection.updateSelection(this.selection.words[1]);
+        expect(this.selection._updateWrapper).toHaveBeenCalled();
+      });
+    });
+
+    describe('when current index stays the same', function() {
+      it('does not update wrapper', function() {
+        this.selection.updateSelection(this.selection.words[0]);
+        expect(this.selection._updateWrapper).not.toHaveBeenCalled();
+      });
     });
   });
 

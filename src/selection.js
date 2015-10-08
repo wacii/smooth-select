@@ -1,6 +1,5 @@
 // TODO: enforce indices in bounds
 // TODO: finalized state, as in selection made
-// TODO: only update selection if index has changed
 
 /**
  * Represents a "selection" signified by that wrapped in a span.
@@ -14,6 +13,7 @@ function Selection(el, words) {
 
   this.initialIndex = index;
   this.currentIndex = index;
+  this.previousIndex = index;
 
   this.words = words;
 
@@ -46,8 +46,11 @@ Object.defineProperty(Selection.prototype, 'currentIndex', {
  * @param {HTMLElement} el
  */
 Selection.prototype.updateSelection = function updateIndex(el) {
+  this.previousIndex = this.currentIndex;
   this.currentIndex = this.words.indexOf(el);
-  this._updateWrapper();
+  
+  if (this.currentIndex !== this.previousIndex)
+    this._updateWrapper();
 };
 
 /**
