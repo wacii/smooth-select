@@ -37,4 +37,14 @@ describe('smoothSelect()', function() {
     spans = doc.getElementsByTagName('span');
     expect(spans[3].className).toEqual('ss-end-selection');
   });
+
+  it('returns a selection manager', function() {
+    var doc = jsdom('<p id="text">a b c</p>');
+    global.document = doc;
+    var manager = smoothSelect(doc.getElementById('text'));
+
+    expect(manager.createSelection).toBeDefined();
+    expect(manager.on).toBeDefined();
+    expect(manager.off).toBeDefined();
+  });
 });

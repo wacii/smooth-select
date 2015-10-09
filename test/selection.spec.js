@@ -123,7 +123,7 @@ describe('Selection()', function() {
       expect(this.selection.on).toEqual(events.on);
     });
 
-    it('has an events object to store listeners', function() {
+    it('has an events object to store callbacks', function() {
       expect(typeof this.selection.events).toEqual('object');
     });
   });
@@ -133,7 +133,7 @@ describe('Selection()', function() {
       expect(this.selection.off).toEqual(events.off);
     });
 
-    it('has an events object to store listeners', function() {
+    it('has an events object to store callbacks', function() {
       expect(typeof this.selection.events).toEqual('object');
     });
   });

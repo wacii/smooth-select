@@ -1,11 +1,11 @@
-var Selection = require('./selection');
+var SelectionManager = require('./selection-manager');
 var splitter = require('./splitter');
 
 smoothSelect = function smoothSelect(el) {
-  var currentSelection = null;
-
   var words = new splitter(el);
   var selecting = false
+
+  var manager = new SelectionManager(words);
 
   el.addEventListener('mousedown', startSelection);
   el.addEventListener('mousemove', updateSelection);
@@ -17,7 +17,7 @@ smoothSelect = function smoothSelect(el) {
     var el = event.target;
     if (el.className !== 'ss-word') return;
 
-    currentSelection = new Selection(el, words);
+    currentSelection = manager.createSelection(el);
     selecting = true;
   }
 
@@ -36,6 +36,8 @@ smoothSelect = function smoothSelect(el) {
     currentSelection.finalize();
     selecting = false;
   }
+
+  return manager;
 }
 
 module.exports = smoothSelect;

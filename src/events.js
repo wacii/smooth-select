@@ -1,5 +1,5 @@
 /**
- * Register one or more listeners for provided event.
+ * Register one or more callbacks for provided event.
  *
  * @param {string} name - The name of an event.
  * @param {...Function} callback
@@ -11,10 +11,10 @@ function on(name, callback) {
 };
 
 /**
- * Removes listeners for a particular event.
+ * Removes callbacks for a particular event.
  *
- * If a callback is provided, the corresponding listener is removed, if found.
- * Otherwise all listeners are removed for the specified event.
+ * If a callback is provided, the corresponding callback is removed, if found.
+ * Otherwise all callbacks are removed for the specified event.
  *
  * @param {string} name - The name of an event.
  * @param {Function} callback
@@ -22,10 +22,10 @@ function on(name, callback) {
 function off(name, callback) {
   var handlers = this.events[name];
 
-  // if there are no registered listeners nothing needs to be done
+  // if there are no registered callbacks nothing needs to be done
   if (handlers === undefined || handlers.length === 0) return;
 
-  // if no callback supplied, remove all listeners
+  // if no callback supplied, remove all callbacks
   if (callback === undefined)
     return handlers.splice(0, handlers.length);
 

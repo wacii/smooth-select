@@ -78,7 +78,7 @@ Selection.prototype.finalize = function finalize() {
   for (var i = 0; i < len; i++)
     handlers[i].call(this);
 
-  // remove listeners
+  // remove callbacks
   this.events = {};
 }
 
@@ -99,14 +99,14 @@ Selection.prototype.toString = function toString() {
 };
 
 /**
- * Register event listeners.
+ * Register event callbacks.
  *
  * @see events.on
  */
 Selection.prototype.on = events.on;
 
 /**
- * Remove event listeners.
+ * Remove event callbacks.
  *
  * @see events.on
  */
