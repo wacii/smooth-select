@@ -31,6 +31,9 @@ describe('Selection()', function() {
 
     selection.update(selection.words[2]);
     expect(wrapper.childNodes.length).toEqual(3);
+
+    selection.update(selection.words[1]);
+    expect(wrapper.childNodes.length).toEqual(2);
   });
 
   describe('#currentIndex=', function() {

@@ -135,12 +135,48 @@ Selection.prototype.off = events.off;
  * @private
  */
 Selection.prototype._updateWrapper = function updateWrapper() {
-  var selectedWords = this.words.slice(this._begin(), this._end() + 1);
+  var currentBegin = this._begin();
+  var currentEnd = this._end();
 
-  // TODO: this does not remove words no longer selected
+  // calculate previous begin and end
+  var previousBegin, previousEnd;
+  if (this.previousIndex < this.initialIndex) {
+    previousBegin = this.previousIndex;
+    previousEnd = this.initialIndex;
+  } else {
+    previousBegin = this.initialIndex;
+    previousEnd = this.previousIndex;
+  }
+
+  // add current selection to wrapper
+  var selectedWords = this.words.slice(currentBegin, currentEnd + 1);
+
   var len = selectedWords.length;
   for (var i = 0; i < len; i++)
     this.wrapper.appendChild(selectedWords[i]);
+
+  // remove words no longer selected, adding them before or after the wrapper
+  var removedWords, parent, nextSibling;
+  if (previousBegin < currentBegin) {
+    // remove words from the start of the selection
+    removedWords = this.words.slice(previousBegin, currentBegin);
+    parent = this.wrapper.parentNode;
+
+    // add words before the wrapper
+    var len = removedWords.length;
+    for (i = 0; i < len; i++)
+      parent.insertBefore(removedWords[i], this.wrapper);
+  } else if (currentEnd < previousEnd) {
+    // remove words from the end of the selction
+    removedWords = this.words.slice(currentEnd + 1, previousEnd + 1);
+    parent = this.wrapper.parentNode;
+    nextSibling = this.wrapper.nextSibling;
+
+    // add words after the wrapper, actually before its next sibling
+    var len = removedWords.length;
+    for (i = 0; i < len; i++)
+      parent.insertBefore(removedWords[i], nextSibling);
+  }
 };
 
 /**
