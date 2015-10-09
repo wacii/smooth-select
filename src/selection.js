@@ -20,13 +20,9 @@ function Selection(el, words) {
   // store handlers for various events
   this.events = {};
 
-  // span marking the start of a selection
-  this.beginSelection = document.createElement('span');
-  this.beginSelection.className = 'ss-start-selection';
-
-  // span marking the end of a selection
-  this.endSelection = document.createElement('span');
-  this.endSelection.className = 'ss-end-selection';
+  this.wrapper = document.createElement('span');
+  this.wrapper.className = 'ss-selection';
+  el.parentNode.insertBefore(this.wrapper, el);
 
   // place marker spans
   this._updateWrapper();
@@ -118,12 +114,11 @@ Selection.prototype.off = events.off;
  * @private
  */
 Selection.prototype._updateWrapper = function updateWrapper() {
-  var word = this.words[this._begin()];
-  word.parentNode.insertBefore(this.beginSelection, word);
+  var selectedWords = this.words.slice(this._begin(), this._end() + 1);
 
-  word = this.words[this._end()];
-  // there is no insertAfter(), so insert before next sibling
-  word.parentNode.insertBefore(this.endSelection, word.nextSibling);
+  var len = selectedWords.length;
+  for (var i = 0; i < len; i++)
+    this.wrapper.appendChild(selectedWords[i]);
 };
 
 /**

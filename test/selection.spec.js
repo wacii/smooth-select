@@ -22,21 +22,14 @@ describe('Selection()', function() {
   // TODO: test interaction with extraneous whitespace
   // TODO: test selection extending backwards
   it('manages span tags in dom', function() {
-    var spans = this.doc.getElementsByTagName('span');
-    expect(spans[0].className).toEqual('ss-start-selection');
-    expect(spans[1].textContent).toEqual('a');
-    expect(spans[2].className).toEqual('ss-end-selection');
-    var el = this.doc.getElementById('text')
+    var wrapper = this.doc.getElementsByClassName('ss-selection')[0];
+    expect(wrapper.childNodes.length).toEqual(1);
 
     this.selection.update(this.selection.words[1]);
-    spans = this.doc.getElementsByTagName('span');
-    expect(spans[2].textContent).toEqual('b');
-    expect(spans[3].className).toEqual('ss-end-selection');
+    expect(wrapper.childNodes.length).toEqual(2);
 
     this.selection.update(this.selection.words[2]);
-    spans = this.doc.getElementsByTagName('span');
-    expect(spans[3].textContent).toEqual('c');
-    expect(spans[4].className).toEqual('ss-end-selection');
+    expect(wrapper.childNodes.length).toEqual(3);
   });
 
   describe('#currentIndex=', function() {
