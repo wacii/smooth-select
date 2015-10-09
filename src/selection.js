@@ -79,6 +79,27 @@ Selection.prototype.finalize = function finalize() {
 }
 
 /**
+ * Remove this selection.
+ */
+Selection.prototype.remove = function remove() {
+  if (!Object.isFrozen(this))
+    throw 'Selection should be finalized before removed';
+
+  var wrapper = this.wrapper;
+  var parent = wrapper.parentNode;
+  var selectedWords = wrapper.childNodes;
+
+  // move selected words out of wrapper
+  var len = selectedWords.length;
+  for (var i = 0; i < len; i++)
+    parent.insertBefore(selectedWords[i], wrapper);
+
+  // remove wrapper from DOM
+  parent.removeChild(wrapper);
+  // TODO: wrapper is frozen with the rest of the object so you can't delete it
+}
+
+/**
  * Returns text content of selection.
  *
  * @return {String}
@@ -116,6 +137,7 @@ Selection.prototype.off = events.off;
 Selection.prototype._updateWrapper = function updateWrapper() {
   var selectedWords = this.words.slice(this._begin(), this._end() + 1);
 
+  // TODO: this does not remove words no longer selected
   var len = selectedWords.length;
   for (var i = 0; i < len; i++)
     this.wrapper.appendChild(selectedWords[i]);
