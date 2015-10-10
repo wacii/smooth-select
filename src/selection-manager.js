@@ -13,6 +13,7 @@ var events = require('./events');
 function SelectionManager(words) {
   this.words = words;
   this.events = events;
+  this.selections = [];
 }
 
 /**
@@ -33,6 +34,17 @@ SelectionManager.prototype.createSelection = function createSelection(el) {
   args.unshift('finalize');
   selection.on.apply(selection, args);
 
+  // add selection to collection when finalized
+  var selections = this.selections;
+  selection.on('finalize', function() {
+    selections.push(this);
+  });
+
+  // remove selection from collection when destroyed
+  selection.on('remove', function() {
+    selections.splice(selections.indexOf(selection), 1);
+  });
+
   // run create callbacks
   var handlers = this.events.create || [];
   var len = handlers.length;
@@ -40,6 +52,23 @@ SelectionManager.prototype.createSelection = function createSelection(el) {
     handlers[i].call(selection);
 
   return this.currentSelection = selection;
+};
+
+/**
+ * Test if provided el is contained in an exisiting selection.
+ *
+ * @param {DOMElement}
+ */
+SelectionManager.prototype.selectionContaining = selectionContaining;
+function selectionContaining(el) {
+  // return first selection containing el
+  var len = this.selections.length;
+  for (var i = 0; i < len; i++)
+    if (this.selections[i].contains(el))
+      return this.selections[i];
+
+  // otherwise return false
+  return false;
 };
 
 /**

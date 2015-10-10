@@ -87,7 +87,8 @@ Selection.prototype.remove = function remove() {
 
   var wrapper = this.wrapper;
   var parent = wrapper.parentNode;
-  var selectedWords = wrapper.childNodes;
+  // childNodes is a live collection so need to make a copy
+  var selectedWords = Array.prototype.slice.call(wrapper.childNodes);
 
   // move selected words out of wrapper
   var len = selectedWords.length;
@@ -97,7 +98,24 @@ Selection.prototype.remove = function remove() {
   // remove wrapper from DOM
   parent.removeChild(wrapper);
   // TODO: wrapper is frozen with the rest of the object so you can't delete it
+
+  // run callbacks
+  var handlers = this.events['remove'] || [];
+  var len = handlers.length;
+  for (i = 0; i < len; i++)
+    handlers[i].call(this);
 }
+
+// TODO: to what extent should a selection expose the selected elements?
+/**
+ * Tests in selection contains provided DOM element.
+ *
+ * @param {DOMElement} el
+ */
+ Selection.prototype.contains = function contains(el) {
+   var selectedWords = this.words.slice(this._begin(), this._end() + 1);
+   return selectedWords.indexOf(el) !== -1;
+ }
 
 /**
  * Returns text content of selection.

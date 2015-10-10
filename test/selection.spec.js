@@ -122,7 +122,24 @@ describe('Selection()', function() {
       selection.remove();
       expect(this.doc.getElementsByClassName('ss-selection').length).toEqual(0);
     });
+
+    it('runs callbacks', function() {
+      var callback = jasmine.createSpy();
+      selection.on('remove', callback);
+
+      selection.finalize();
+      selection.remove();
+      expect(callback).toHaveBeenCalled();
+    });
   });
+
+  describe('#contains()', function() {
+    it('test whether provided element is selected', function() {
+      var words = this.doc.getElementsByClassName('ss-word')
+      expect(selection.contains(words[0])).toBe(true);
+      expect(selection.contains(words[1])).toBe(false);
+    });
+  })
 
   describe('#toString()', function() {
     it('returns text based on starting and current index', function() {

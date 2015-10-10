@@ -17,8 +17,14 @@ smoothSelect = function smoothSelect(el) {
     var el = event.target;
     if (el.className !== 'ss-word') return;
 
-    currentSelection = manager.createSelection(el);
-    selecting = true;
+    var overlappingSelection = manager.selectionContaining(el);
+
+    if (overlappingSelection) {
+      overlappingSelection.remove();
+    } else {
+      currentSelection = manager.createSelection(el);
+      selecting = true;
+    }
   }
 
   function updateSelection(event) {

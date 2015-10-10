@@ -51,6 +51,18 @@ describe('SelectionManager', function() {
     });
   });
 
+  describe('#selectionContaining()', function() {
+    it('tests whether it contains provided element', function() {
+      var manager = this.manager;
+
+      expect(manager.selectionContaining(this.words[0])).toBe(false);
+      var selection = manager.createSelection(this.words[0]);
+      // selection not added to collection until finalized
+      selection.finalize();
+      expect(manager.selectionContaining(this.words[0])).toEqual(selection);
+    })
+  });
+
   describe('#on()', function() {
     it('registers callback', function() {
       var cb = function() {};
@@ -92,4 +104,23 @@ describe('SelectionManager', function() {
       expect(this.manager.currentSelection.events.update.length).toEqual(0);
     });
   })
+
+  describe('when selection finalized', function() {
+    it('adds selection to collection', function() {
+      expect(this.manager.selections.length).toEqual(0);
+      var selection = this.manager.createSelection(this.words[0]);
+      selection.finalize();
+      expect(this.manager.selections[0]).toEqual(selection);
+    });
+  });
+
+  describe('when selection destroyed', function() {
+    it('removes selection from collection', function() {
+      var selection = this.manager.createSelection(this.words[0]);
+      selection.finalize();
+      expect(this.manager.selections[0]).toEqual(selection);
+      selection.remove();
+      expect(this.manager.selections.length).toEqual(0);
+    });
+  });
 });
