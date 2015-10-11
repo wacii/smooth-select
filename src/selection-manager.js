@@ -1,8 +1,8 @@
-// TODO: registering own callbacks on currentSelection is unnecessary
-//   just notify this with a trigger method or something and handle it here
+// TODO: make this an array of selections with extra behavior
+//   as opposed to a normal object with selections as a property
 
 var Selection = require('./selection');
-var events = require('./events');
+var Emitter = require('./emitter');
 
 /**
  * Creates a selection manager.
@@ -12,8 +12,16 @@ var events = require('./events');
  */
 function SelectionManager(words) {
   this.words = words;
-  this.events = events;
   this.selections = [];
+
+  var selections = this.selections;
+  this.on('finalize', function(selection) {
+    selections.push(selection);
+  })
+
+  this.on('remove', function(selection) {
+    selections.splice(selections.indexOf(selection), 1);
+  })
 }
 
 /**
@@ -23,34 +31,8 @@ function SelectionManager(words) {
  */
 SelectionManager.prototype.createSelection = function createSelection(el) {
   var selection = new Selection(el, this.words);
-
-  // register update callbacks on selection
-  var args = (this.events.update || []).slice();
-  args.unshift('update');
-  selection.on.apply(selection, args);
-
-  // register finalize callbacks on selection
-  args = (this.events.finalize || []).slice();
-  args.unshift('finalize');
-  selection.on.apply(selection, args);
-
-  // add selection to collection when finalized
-  var selections = this.selections;
-  selection.on('finalize', function() {
-    selections.push(this);
-  });
-
-  // remove selection from collection when destroyed
-  selection.on('remove', function() {
-    selections.splice(selections.indexOf(selection), 1);
-  });
-
-  // run create callbacks
-  var handlers = this.events.create || [];
-  var len = handlers.length;
-  for (var i = 0; i < len; i++)
-    handlers[i].call(selection);
-
+  this.listenTo(selection);
+  this.trigger('create');
   return this.currentSelection = selection;
 };
 
@@ -71,28 +53,8 @@ function selectionContaining(el) {
   return false;
 };
 
-/**
- * Register one or more callbacks on this and current selection.
- *
- * @param {string} name - The name of an event.
- * @param {...Function} callback
- */
-SelectionManager.prototype.on = function on(name, callback) {
-  events.on.apply(this, arguments);
-  if (this.currentSelection !== undefined)
-    this.currentSelection.on.apply(this.currentSelection, arguments);
-}
-
-/**
- * Remove callback from this and current selection.
- *
- * @param {string} name - The name of an event.
- * @param {Function} callback
- */
-SelectionManager.prototype.off = function off(name, callback) {
-  events.off.call(this, name, callback);
-  if (this.currentSelection !== undefined)
-    this.currentSelection.off(name, callback);
-}
+// extends Emitter
+for (key in Emitter.prototype)
+  SelectionManager.prototype[key] = Emitter.prototype[key];
 
 module.exports = SelectionManager;

@@ -1,5 +1,5 @@
 // TODO: enforce indices in bounds
-var events = require('./events')
+var Emitter = require('./emitter')
 
 /**
  * Represents a "selection" signified by that wrapped in a span.
@@ -16,9 +16,6 @@ function Selection(el, words) {
   this.previousIndex = index;
 
   this.words = words;
-
-  // store handlers for various events
-  this.events = {};
 
   this.wrapper = document.createElement('span');
   this.wrapper.className = 'ss-selection';
@@ -51,12 +48,8 @@ Selection.prototype.update = function updateIndex(el) {
   // if selection has actually changed adjust markers and run callbacks
   if (this.currentIndex !== this.previousIndex) {
     this._updateWrapper();
-
-    // run update callbacks
-    var handlers = this.events['update'] || [];
-    var len = handlers.length;
-    for (var i = 0; i < len; i++)
-      handlers[i].call(this);
+    // run callbacks
+    this.trigger('update');
   }
 };
 
@@ -68,12 +61,10 @@ Selection.prototype.update = function updateIndex(el) {
 Selection.prototype.finalize = function finalize() {
   Object.freeze(this);
 
-  // run finalize callbacks
-  var handlers = this.events['finalize'] || [];
-  var len = handlers.length;
-  for (var i = 0; i < len; i++)
-    handlers[i].call(this);
+  // run callbacks
+  this.trigger('finalize');
 
+  // TODO: the following is insufficient
   // remove callbacks
   this.events = {};
 }
@@ -100,10 +91,7 @@ Selection.prototype.remove = function remove() {
   // TODO: wrapper is frozen with the rest of the object so you can't delete it
 
   // run callbacks
-  var handlers = this.events['remove'] || [];
-  var len = handlers.length;
-  for (i = 0; i < len; i++)
-    handlers[i].call(this);
+  this.trigger('remove');
 }
 
 // TODO: to what extent should a selection expose the selected elements?
@@ -133,19 +121,9 @@ Selection.prototype.toString = function toString() {
   return textArray.join(' ');
 };
 
-/**
- * Register event callbacks.
- *
- * @see events.on
- */
-Selection.prototype.on = events.on;
-
-/**
- * Remove event callbacks.
- *
- * @see events.on
- */
-Selection.prototype.off = events.off;
+// extends Emitter
+for (key in Emitter.prototype)
+  Selection.prototype[key] = Emitter.prototype[key];
 
 /**
  * Add current selection to wrapper.

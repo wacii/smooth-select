@@ -1,6 +1,5 @@
 var Selection = require('../src/selection');
 var splitter = require('../src/splitter');
-var events = require('../src/events');
 var jsdom = require('jsdom').jsdom;
 
 describe('Selection()', function() {
@@ -152,26 +151,6 @@ describe('Selection()', function() {
       selection.currentIndex = 0;
 
       expect(selection.toString()).toEqual('a b');
-    });
-  });
-
-  describe('#on()', function() {
-    it('uses method from events module', function() {
-      expect(selection.on).toEqual(events.on);
-    });
-
-    it('has an events object to store callbacks', function() {
-      expect(typeof selection.events).toEqual('object');
-    });
-  });
-
-  describe('#off()', function() {
-    it('uses method from events module', function() {
-      expect(selection.off).toEqual(events.off);
-    });
-
-    it('has an events object to store callbacks', function() {
-      expect(typeof selection.events).toEqual('object');
     });
   });
 });
