@@ -4,7 +4,7 @@
 //   as opposed to a normal object with selections as a property
 
 const Selection = require(__dirname + '/selection');
-const EventEmitter = require('./emitter');
+const EventEmitter = require('events').EventEmitter;
 
 /**
  * Creates a selection manager.
@@ -20,14 +20,11 @@ module.exports = class SelectionManager extends EventEmitter {
     this.words = words;
     this.selections = [];
 
-    var selections = this.selections;
-    this.on('finalize', function(selection) {
-      selections.push(selection);
-    })
+    this.onSelectionFinalized = (selection) =>
+      this.selections.push(selection)
 
-    this.on('remove', function(selection) {
-      selections.splice(selections.indexOf(selection), 1);
-    })
+    this.onSelectionRemoved = (selection) =>
+      this.selections.splice(this.selections.indexOf(selection), 1)
   }
 
   /**
@@ -37,8 +34,9 @@ module.exports = class SelectionManager extends EventEmitter {
    */
   createSelection(el) {
     var selection = new Selection(el, this.words);
-    this.listenTo(selection);
-    this.trigger('create');
+    selection.once('finalize', this.onSelectionFinalized);
+    selection.once('remove', this.onSelectionRemoved);
+    this.emit('create');
     return this.currentSelection = selection;
   }
 

@@ -49,8 +49,7 @@ describe('smoothSelect()', function() {
     global.document = doc;
     var manager = smoothSelect(doc.getElementById('text'));
 
-    expect(manager.createSelection).toBeDefined();
-    expect(manager.on).toBeDefined();
-    expect(manager.off).toBeDefined();
+    expect(typeof manager.createSelection).toEqual('function');
+    expect(typeof manager.selectionContaining).toEqual('function');
   });
 });

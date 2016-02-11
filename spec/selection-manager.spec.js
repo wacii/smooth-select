@@ -24,7 +24,8 @@ describe('SelectionManager', function() {
 
     it('listens to selection', function() {
       var selection = this.manager.createSelection(this.words[0]);
-      expect(selection.listeners[0]).toEqual(this.manager);
+      expect(selection.listenerCount('finalize')).toEqual(1);
+      expect(selection.listenerCount('remove')).toEqual(1)
     });
 
     it('runs create callbacks', function() {

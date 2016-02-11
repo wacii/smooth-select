@@ -1,7 +1,7 @@
 'use strict';
 
 // TODO: enforce indices in bounds
-const EventEmitter = require('./emitter');
+const EventEmitter = require('events').EventEmitter;
 
 /**
  * Represents a "selection" signified by that wrapped in a span.
@@ -54,7 +54,7 @@ module.exports = class Selection extends EventEmitter {
     if (this.currentIndex !== this.previousIndex) {
       this._updateWrapper();
       // run callbacks
-      this.trigger('update');
+      this.emit('update');
     }
   }
 
@@ -67,7 +67,7 @@ module.exports = class Selection extends EventEmitter {
     // Object.freeze(this);
 
     // run callbacks
-    this.trigger('finalize');
+    this.emit('finalize', this);
 
     // TODO: the following is insufficient
     // remove callbacks
@@ -99,7 +99,7 @@ module.exports = class Selection extends EventEmitter {
     // TODO: wrapper is frozen with the rest of the object so you can't delete it
 
     // run callbacks
-    this.trigger('remove');
+    this.emit('remove', this);
   }
 
   // TODO: to what extent should a selection expose the selected elements?
