@@ -33,7 +33,7 @@ module.exports = class SelectionManager extends EventEmitter {
    * @param {DOMElement}
    */
   createSelection(el) {
-    var selection = new Selection(el, this.words);
+    const selection = new Selection(el, this.words);
     selection.once('finalize', this.onSelectionFinalized);
     selection.once('remove', this.onSelectionRemoved);
     this.emit('create');
@@ -46,13 +46,7 @@ module.exports = class SelectionManager extends EventEmitter {
    * @param {DOMElement}
    */
   selectionContaining(el) {
-    // return first selection containing el
-    var len = this.selections.length;
-    for (var i = 0; i < len; i++)
-      if (this.selections[i].contains(el))
-        return this.selections[i];
-
-    // otherwise return false
-    return false;
+    // return first selection containing el or undefined
+    return this.selections.find(selection => selection.contains(el));
   }
 }

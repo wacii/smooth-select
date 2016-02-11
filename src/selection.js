@@ -15,7 +15,7 @@ module.exports = class Selection extends EventEmitter {
   constructor(el, words) {
     super();
 
-    var index = words.indexOf(el);
+    const index = words.indexOf(el);
 
     this.initialIndex = index;
     this.currentIndex = index;
@@ -84,15 +84,13 @@ module.exports = class Selection extends EventEmitter {
     // if (!Object.isFrozen(this))
     //   throw 'Selection should be finalized before removed';
 
-    var wrapper = this.wrapper;
-    var parent = wrapper.parentNode;
+    const wrapper = this.wrapper;
+    const parent = wrapper.parentNode;
     // childNodes is a live collection so need to make a copy
-    var selectedWords = Array.prototype.slice.call(wrapper.childNodes);
+    const selectedWords = Array.prototype.slice.call(wrapper.childNodes);
 
     // move selected words out of wrapper
-    var len = selectedWords.length;
-    for (var i = 0; i < len; i++)
-      parent.insertBefore(selectedWords[i], wrapper);
+    selectedWords.forEach(word => parent.insertBefore(word, wrapper))
 
     // remove wrapper from DOM
     parent.removeChild(wrapper);
@@ -109,7 +107,7 @@ module.exports = class Selection extends EventEmitter {
    * @param {DOMElement} el
    */
    contains(el) {
-     var selectedWords = this.words.slice(this._begin(), this._end() + 1);
+     const selectedWords = this.words.slice(this._begin(), this._end() + 1);
      return selectedWords.indexOf(el) !== -1;
    }
 
@@ -119,12 +117,8 @@ module.exports = class Selection extends EventEmitter {
    * @return {String}
    */
   toString() {
-    var selectedWords = this.words.slice(this._begin(), this._end() + 1);
-    var textArray = [];
-
-    var len = selectedWords.length
-    for (var i = 0; i < len; i++)
-      textArray.push(selectedWords[i].textContent)
+    const selectedWords = this.words.slice(this._begin(), this._end() + 1);
+    const textArray = selectedWords.map(word => word.textContent);
 
     return textArray.join(' ');
   }
@@ -135,11 +129,12 @@ module.exports = class Selection extends EventEmitter {
    * @private
    */
   _updateWrapper() {
-    var currentBegin = this._begin();
-    var currentEnd = this._end();
+    const currentBegin = this._begin();
+    const currentEnd = this._end();
 
     // calculate previous begin and end
-    var previousBegin, previousEnd;
+    let previousBegin;
+    let previousEnd;
     if (this.previousIndex < this.initialIndex) {
       previousBegin = this.previousIndex;
       previousEnd = this.initialIndex;
@@ -149,33 +144,23 @@ module.exports = class Selection extends EventEmitter {
     }
 
     // add current selection to wrapper
-    var selectedWords = this.words.slice(currentBegin, currentEnd + 1);
-
-    var len = selectedWords.length;
-    for (var i = 0; i < len; i++)
-      this.wrapper.appendChild(selectedWords[i]);
+    const selectedWords = this.words.slice(currentBegin, currentEnd + 1);
+    const wrapper = this.wrapper;
+    selectedWords.forEach(word => wrapper.appendChild(word));
 
     // remove words no longer selected, adding them before or after the wrapper
-    var removedWords, parent, nextSibling;
+    const parent = wrapper.parentNode;
     if (previousBegin < currentBegin) {
       // remove words from the start of the selection
-      removedWords = this.words.slice(previousBegin, currentBegin);
-      parent = this.wrapper.parentNode;
-
+      const removedWords = this.words.slice(previousBegin, currentBegin);
       // add words before the wrapper
-      var len = removedWords.length;
-      for (i = 0; i < len; i++)
-        parent.insertBefore(removedWords[i], this.wrapper);
+      removedWords.forEach(word => parent.insertBefore(word, wrapper));
     } else if (currentEnd < previousEnd) {
       // remove words from the end of the selction
-      removedWords = this.words.slice(currentEnd + 1, previousEnd + 1);
-      parent = this.wrapper.parentNode;
-      nextSibling = this.wrapper.nextSibling;
-
+      const removedWords = this.words.slice(currentEnd + 1, previousEnd + 1);
+      const nextSibling = this.wrapper.nextSibling;
       // add words after the wrapper, actually before its next sibling
-      var len = removedWords.length;
-      for (i = 0; i < len; i++)
-        parent.insertBefore(removedWords[i], nextSibling);
+      removedWords.forEach(word => parent.insertBefore(word, nextSibling));
     }
   }
 

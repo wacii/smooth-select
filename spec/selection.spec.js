@@ -1,16 +1,18 @@
-var Selection = require('../src/selection');
-var splitter = require('../src/splitter');
-var jsdom = require('jsdom').jsdom;
+'use strict';
+
+const Selection = require('../src/selection');
+const splitter = require('../src/splitter');
+const jsdom = require('jsdom').jsdom;
 
 describe('Selection()', function() {
-  var index = 0;
-  var selection;
+  const index = 0;
+  let selection;
 
   beforeEach(function () {
     this.doc = jsdom('<p id="text">a b c</p>');
     global.document = this.doc;
 
-    var words = splitter(this.doc.getElementById('text'));
+    const words = splitter(this.doc.getElementById('text'));
     selection = new Selection(words[index], words);
   });
 
@@ -22,7 +24,7 @@ describe('Selection()', function() {
   // TODO: test interaction with extraneous whitespace
   // TODO: test selection extending backwards
   it('manages span tags in dom', function() {
-    var wrapper = this.doc.getElementsByClassName('ss-selection')[0];
+    const wrapper = this.doc.getElementsByClassName('ss-selection')[0];
     expect(wrapper.childNodes.length).toEqual(1);
 
     selection.update(selection.words[1]);
@@ -37,7 +39,7 @@ describe('Selection()', function() {
 
   describe('#currentIndex=', function() {
     it('throws an error if index is -1', function() {
-      var block = function() {
+      const block = function() {
         selection.currentIndex = -1;
       }
       expect(block).toThrow();
@@ -61,7 +63,7 @@ describe('Selection()', function() {
       });
 
       it('runs callbacks', function() {
-        var callback = jasmine.createSpy();
+        const callback = jasmine.createSpy();
         selection.on('update', callback);
 
         selection.update(selection.words[1]);
@@ -76,7 +78,7 @@ describe('Selection()', function() {
       });
 
       it('does not run callbacks', function() {
-        var callback = jasmine.createSpy();
+        const callback = jasmine.createSpy();
         selection.on('update', callback);
 
         selection.update(selection.words[0]);
@@ -92,7 +94,7 @@ describe('Selection()', function() {
     // });
 
     it('runs callbacks', function() {
-      var callback = jasmine.createSpy();
+      const callback = jasmine.createSpy();
       selection.on('finalize', callback);
 
       selection.finalize();
@@ -123,7 +125,7 @@ describe('Selection()', function() {
     });
 
     it('runs callbacks', function() {
-      var callback = jasmine.createSpy('onRemove');
+      const callback = jasmine.createSpy('onRemove');
       selection.on('remove', callback);
 
       selection.finalize();
@@ -134,7 +136,7 @@ describe('Selection()', function() {
 
   describe('#contains()', function() {
     it('test whether provided element is selected', function() {
-      var words = this.doc.getElementsByClassName('ss-word')
+      const words = this.doc.getElementsByClassName('ss-word')
       expect(selection.contains(words[0])).toBe(true);
       expect(selection.contains(words[1])).toBe(false);
     });

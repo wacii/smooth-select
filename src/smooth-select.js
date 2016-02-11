@@ -1,11 +1,14 @@
-var SelectionManager = require('./selection-manager');
-var splitter = require('./splitter');
+'use strict';
 
-smoothSelect = function smoothSelect(el) {
-  var words = new splitter(el);
-  var selecting = false
+const SelectionManager = require('./selection-manager');
+const splitter = require('./splitter');
 
-  var manager = new SelectionManager(words);
+const smoothSelect = function smoothSelect(el) {
+  const words = new splitter(el);
+  let selecting = false
+  let currentSelection;
+
+  const manager = new SelectionManager(words);
 
   el.addEventListener('mousedown', startSelection);
   el.addEventListener('mousemove', updateSelection);
@@ -14,10 +17,10 @@ smoothSelect = function smoothSelect(el) {
   function startSelection(event) {
     if (selecting) return;
 
-    var el = event.target;
+    const el = event.target;
     if (el.className !== 'ss-word') return;
 
-    var overlappingSelection = manager.selectionContaining(el);
+    const overlappingSelection = manager.selectionContaining(el);
 
     if (overlappingSelection) {
       overlappingSelection.remove();
@@ -30,7 +33,7 @@ smoothSelect = function smoothSelect(el) {
   function updateSelection(event) {
     if (!selecting) return;
 
-    var el = event.target;
+    const el = event.target;
     if (el.className !== 'ss-word') return;
 
     currentSelection.update(el);

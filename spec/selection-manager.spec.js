@@ -1,7 +1,9 @@
+'use strict';
+
 // TODO: mock modules, you don't need the dom here
-var SelectionManager = require('../src/selection-manager');
-var splitter = require('../src/splitter');
-var jsdom = require('jsdom').jsdom;
+const SelectionManager = require('../src/selection-manager');
+const splitter = require('../src/splitter');
+const jsdom = require('jsdom').jsdom;
 
 describe('SelectionManager', function() {
   beforeEach(function() {
@@ -13,7 +15,7 @@ describe('SelectionManager', function() {
 
   describe('#createSelection()', function() {
     it('returns a new selection', function() {
-      var selection = this.manager.createSelection(this.words[0]);
+      const selection = this.manager.createSelection(this.words[0]);
       expect(selection.toString()).toEqual('a');
     });
 
@@ -23,14 +25,14 @@ describe('SelectionManager', function() {
     });
 
     it('listens to selection', function() {
-      var selection = this.manager.createSelection(this.words[0]);
+      const selection = this.manager.createSelection(this.words[0]);
       expect(selection.listenerCount('finalize')).toEqual(1);
       expect(selection.listenerCount('remove')).toEqual(1)
     });
 
     it('runs create callbacks', function() {
-      var cb1 = jasmine.createSpy('cb1');
-      var cb2 = jasmine.createSpy('cb2');
+      const cb1 = jasmine.createSpy('cb1');
+      const cb2 = jasmine.createSpy('cb2');
 
       this.manager.on('create', cb1);
       this.manager.on('update', cb2);
@@ -44,10 +46,10 @@ describe('SelectionManager', function() {
 
   describe('#selectionContaining()', function() {
     it('tests whether it contains provided element', function() {
-      var manager = this.manager;
+      const manager = this.manager;
 
-      expect(manager.selectionContaining(this.words[0])).toBe(false);
-      var selection = manager.createSelection(this.words[0]);
+      expect(manager.selectionContaining(this.words[0])).toBeFalsy();
+      const selection = manager.createSelection(this.words[0]);
       // selection not added to collection until finalized
       selection.finalize();
       expect(manager.selectionContaining(this.words[0])).toEqual(selection);
@@ -57,7 +59,7 @@ describe('SelectionManager', function() {
   describe('when selection finalized', function() {
     it('adds selection to collection', function() {
       expect(this.manager.selections.length).toEqual(0);
-      var selection = this.manager.createSelection(this.words[0]);
+      const selection = this.manager.createSelection(this.words[0]);
       selection.finalize();
       expect(this.manager.selections[0]).toEqual(selection);
     });
@@ -65,7 +67,7 @@ describe('SelectionManager', function() {
 
   describe('when selection destroyed', function() {
     it('removes selection from collection', function() {
-      var selection = this.manager.createSelection(this.words[0]);
+      const selection = this.manager.createSelection(this.words[0]);
       selection.finalize();
       expect(this.manager.selections[0]).toEqual(selection);
       selection.remove();

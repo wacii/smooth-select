@@ -1,3 +1,7 @@
+'use strict';
+
+const slice = Array.prototype.slice;
+
 /**
  * Wraps words of provided element in spans
  *
@@ -6,20 +10,18 @@
  * @private
  */
 function splitter(el) {
-  var text = el.textContent;
+  const text = el.textContent;
   if (!text || text.trim() === '') return;
 
-  var words = text.split(' ');
-  var html = '';
-
-  var len = words.length;
-  for (var i = 0; i < len; i++)
-    html += '<span class="ss-word">' + words[i] + '</span>' + ' ';
+  const words = text.split(' ');
+  const html = words
+    .map(word => `<span class="ss-word">${word}</span>`)
+    .join(' ');
 
   el.innerHTML = html;
 
-  var els = el.getElementsByClassName('ss-word');
-  return Array.prototype.slice.call(els);
+  const els = el.getElementsByClassName('ss-word');
+  return slice.call(els);
 }
 
 module.exports = splitter;
