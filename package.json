@@ -4,7 +4,7 @@
   "description": "Text selection by entire words.",
   "main": "smooth-select.js",
   "scripts": {
-    "test": "jasmine-node test"
+    "test": "jasmine test"
   },
   "repository": {
     "type": "git",
@@ -17,7 +17,10 @@
   "author": "wacii",
   "license": "MIT",
   "devDependencies": {
-    "jasmine-node": "^1.14.5",
-    "jsdom": "^6.5.1"
+    "babel-core": "^6.5.1",
+    "babel-preset-es2015": "^6.5.0",
+    "jasmine": "^2.4.1",
+    "jsdom": "^6.5.1",
+    "webpack": "^1.12.13"
   }
 }

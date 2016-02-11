@@ -1,5 +1,7 @@
+'use strict';
+
 // TODO: enforce indices in bounds
-var Emitter = require('./emitter')
+const EventEmitter = require('./emitter');
 
 /**
  * Represents a "selection" signified by that wrapped in a span.
@@ -8,189 +10,190 @@ var Emitter = require('./emitter')
  * @param {Words} words
  * @see words
  */
-function Selection(el, words) {
-  var index = words.indexOf(el);
+module.exports = class Selection extends EventEmitter {
 
-  this.initialIndex = index;
-  this.currentIndex = index;
-  this.previousIndex = index;
+  constructor(el, words) {
+    super();
 
-  this.words = words;
+    var index = words.indexOf(el);
 
-  this.wrapper = document.createElement('span');
-  this.wrapper.className = 'ss-selection';
-  el.parentNode.insertBefore(this.wrapper, el);
+    this.initialIndex = index;
+    this.currentIndex = index;
+    this.previousIndex = index;
 
-  // place marker spans
-  this._updateWrapper();
-}
+    this.words = words;
 
-Object.defineProperty(Selection.prototype, 'currentIndex', {
-  get: function() {
+    this.wrapper = document.createElement('span');
+    this.wrapper.className = 'ss-selection';
+    el.parentNode.insertBefore(this.wrapper, el);
+
+    // place marker spans
+    this._updateWrapper();
+  }
+
+  get currentIndex() {
     return this._initialIndex;
-  },
-  set: function(value) {
+  }
+
+  set currentIndex(value) {
     if (value === -1)
       throw 'element not found';
     return this._initialIndex = value;
   }
-});
 
-/**
- * Updates current selection.
- *
- * @param {HTMLElement} el
- */
-Selection.prototype.update = function updateIndex(el) {
-  this.previousIndex = this.currentIndex;
-  this.currentIndex = this.words.indexOf(el);
+  /**
+   * Updates current selection.
+   *
+   * @param {HTMLElement} el
+   */
+  update(el) {
+    this.previousIndex = this.currentIndex;
+    this.currentIndex = this.words.indexOf(el);
 
-  // if selection has actually changed adjust markers and run callbacks
-  if (this.currentIndex !== this.previousIndex) {
-    this._updateWrapper();
+    // if selection has actually changed adjust markers and run callbacks
+    if (this.currentIndex !== this.previousIndex) {
+      this._updateWrapper();
+      // run callbacks
+      this.trigger('update');
+    }
+  }
+
+  /**
+   * Prevent selection from being modified.
+   *
+   * Note that DOM Manipulation only happens when current index changes.
+   */
+  finalize() {
+    // Object.freeze(this);
+
     // run callbacks
-    this.trigger('update');
-  }
-};
+    this.trigger('finalize');
 
-/**
- * Prevent selection from being modified.
- *
- * Note that DOM Manipulation only happens when current index changes.
- */
-Selection.prototype.finalize = function finalize() {
-  Object.freeze(this);
-
-  // run callbacks
-  this.trigger('finalize');
-
-  // TODO: the following is insufficient
-  // remove callbacks
-  this.events = {};
-}
-
-/**
- * Remove this selection.
- */
-Selection.prototype.remove = function remove() {
-  if (!Object.isFrozen(this))
-    throw 'Selection should be finalized before removed';
-
-  var wrapper = this.wrapper;
-  var parent = wrapper.parentNode;
-  // childNodes is a live collection so need to make a copy
-  var selectedWords = Array.prototype.slice.call(wrapper.childNodes);
-
-  // move selected words out of wrapper
-  var len = selectedWords.length;
-  for (var i = 0; i < len; i++)
-    parent.insertBefore(selectedWords[i], wrapper);
-
-  // remove wrapper from DOM
-  parent.removeChild(wrapper);
-  // TODO: wrapper is frozen with the rest of the object so you can't delete it
-
-  // run callbacks
-  this.trigger('remove');
-}
-
-// TODO: to what extent should a selection expose the selected elements?
-/**
- * Tests in selection contains provided DOM element.
- *
- * @param {DOMElement} el
- */
- Selection.prototype.contains = function contains(el) {
-   var selectedWords = this.words.slice(this._begin(), this._end() + 1);
-   return selectedWords.indexOf(el) !== -1;
- }
-
-/**
- * Returns text content of selection.
- *
- * @return {String}
- */
-Selection.prototype.toString = function toString() {
-  var selectedWords = this.words.slice(this._begin(), this._end() + 1);
-  var textArray = [];
-
-  var len = selectedWords.length
-  for (var i = 0; i < len; i++)
-    textArray.push(selectedWords[i].textContent)
-
-  return textArray.join(' ');
-};
-
-// extends Emitter
-for (key in Emitter.prototype)
-  Selection.prototype[key] = Emitter.prototype[key];
-
-/**
- * Add current selection to wrapper.
- *
- * @private
- */
-Selection.prototype._updateWrapper = function updateWrapper() {
-  var currentBegin = this._begin();
-  var currentEnd = this._end();
-
-  // calculate previous begin and end
-  var previousBegin, previousEnd;
-  if (this.previousIndex < this.initialIndex) {
-    previousBegin = this.previousIndex;
-    previousEnd = this.initialIndex;
-  } else {
-    previousBegin = this.initialIndex;
-    previousEnd = this.previousIndex;
+    // TODO: the following is insufficient
+    // remove callbacks
+    // this.events = {};
   }
 
-  // add current selection to wrapper
-  var selectedWords = this.words.slice(currentBegin, currentEnd + 1);
+  // FIXME: object freezing code doesn't work and is unnecessary
+  // FIXME: callbacks are removed in finalize, but expected for onRemove
 
-  var len = selectedWords.length;
-  for (var i = 0; i < len; i++)
-    this.wrapper.appendChild(selectedWords[i]);
+  /**
+   * Remove this selection.
+   */
+  remove() {
+    // if (!Object.isFrozen(this))
+    //   throw 'Selection should be finalized before removed';
 
-  // remove words no longer selected, adding them before or after the wrapper
-  var removedWords, parent, nextSibling;
-  if (previousBegin < currentBegin) {
-    // remove words from the start of the selection
-    removedWords = this.words.slice(previousBegin, currentBegin);
-    parent = this.wrapper.parentNode;
+    var wrapper = this.wrapper;
+    var parent = wrapper.parentNode;
+    // childNodes is a live collection so need to make a copy
+    var selectedWords = Array.prototype.slice.call(wrapper.childNodes);
 
-    // add words before the wrapper
-    var len = removedWords.length;
-    for (i = 0; i < len; i++)
-      parent.insertBefore(removedWords[i], this.wrapper);
-  } else if (currentEnd < previousEnd) {
-    // remove words from the end of the selction
-    removedWords = this.words.slice(currentEnd + 1, previousEnd + 1);
-    parent = this.wrapper.parentNode;
-    nextSibling = this.wrapper.nextSibling;
+    // move selected words out of wrapper
+    var len = selectedWords.length;
+    for (var i = 0; i < len; i++)
+      parent.insertBefore(selectedWords[i], wrapper);
 
-    // add words after the wrapper, actually before its next sibling
-    var len = removedWords.length;
-    for (i = 0; i < len; i++)
-      parent.insertBefore(removedWords[i], nextSibling);
+    // remove wrapper from DOM
+    parent.removeChild(wrapper);
+    // TODO: wrapper is frozen with the rest of the object so you can't delete it
+
+    // run callbacks
+    this.trigger('remove');
   }
-};
 
-/**
- * Returns starting index of represented range.
- *
- * @private
- */
-Selection.prototype._begin = function _begin() {
-  return Math.min(this.initialIndex, this.currentIndex);
+  // TODO: to what extent should a selection expose the selected elements?
+  /**
+   * Tests in selection contains provided DOM element.
+   *
+   * @param {DOMElement} el
+   */
+   contains(el) {
+     var selectedWords = this.words.slice(this._begin(), this._end() + 1);
+     return selectedWords.indexOf(el) !== -1;
+   }
+
+  /**
+   * Returns text content of selection.
+   *
+   * @return {String}
+   */
+  toString() {
+    var selectedWords = this.words.slice(this._begin(), this._end() + 1);
+    var textArray = [];
+
+    var len = selectedWords.length
+    for (var i = 0; i < len; i++)
+      textArray.push(selectedWords[i].textContent)
+
+    return textArray.join(' ');
+  }
+
+  /**
+   * Add current selection to wrapper.
+   *
+   * @private
+   */
+  _updateWrapper() {
+    var currentBegin = this._begin();
+    var currentEnd = this._end();
+
+    // calculate previous begin and end
+    var previousBegin, previousEnd;
+    if (this.previousIndex < this.initialIndex) {
+      previousBegin = this.previousIndex;
+      previousEnd = this.initialIndex;
+    } else {
+      previousBegin = this.initialIndex;
+      previousEnd = this.previousIndex;
+    }
+
+    // add current selection to wrapper
+    var selectedWords = this.words.slice(currentBegin, currentEnd + 1);
+
+    var len = selectedWords.length;
+    for (var i = 0; i < len; i++)
+      this.wrapper.appendChild(selectedWords[i]);
+
+    // remove words no longer selected, adding them before or after the wrapper
+    var removedWords, parent, nextSibling;
+    if (previousBegin < currentBegin) {
+      // remove words from the start of the selection
+      removedWords = this.words.slice(previousBegin, currentBegin);
+      parent = this.wrapper.parentNode;
+
+      // add words before the wrapper
+      var len = removedWords.length;
+      for (i = 0; i < len; i++)
+        parent.insertBefore(removedWords[i], this.wrapper);
+    } else if (currentEnd < previousEnd) {
+      // remove words from the end of the selction
+      removedWords = this.words.slice(currentEnd + 1, previousEnd + 1);
+      parent = this.wrapper.parentNode;
+      nextSibling = this.wrapper.nextSibling;
+
+      // add words after the wrapper, actually before its next sibling
+      var len = removedWords.length;
+      for (i = 0; i < len; i++)
+        parent.insertBefore(removedWords[i], nextSibling);
+    }
+  }
+
+  /**
+   * Returns starting index of represented range.
+   *
+   * @private
+   */
+  _begin() {
+    return Math.min(this.initialIndex, this.currentIndex);
+  }
+
+  /**
+   * Returns ending index of represent range.
+   *
+   * @private
+   */
+  _end() {
+    return Math.max(this.initialIndex, this.currentIndex);
+  }
 }
-
-/**
- * Returns ending index of represent range.
- *
- * @private
- */
-Selection.prototype._end = function _end() {
-  return Math.max(this.initialIndex, this.currentIndex);
-}
-
-module.exports = Selection;

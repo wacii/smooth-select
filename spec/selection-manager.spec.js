@@ -1,5 +1,4 @@
 // TODO: mock modules, you don't need the dom here
-
 var SelectionManager = require('../src/selection-manager');
 var splitter = require('../src/splitter');
 var jsdom = require('jsdom').jsdom;
