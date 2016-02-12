@@ -77,6 +77,19 @@ module.exports = class Selection extends EventEmitter {
   finalize() {
     // Object.freeze(this);
 
+    const span = document.createElement('span');
+    span.className = 'ss-selection';
+
+    const firstWord = this.selectedWords[0];
+    firstWord.parentNode.insertBefore(span, firstWord);
+
+    const fragment = document.createDocumentFragment();
+    this.selectedWords.forEach(word => {
+      word.classList.remove('ss-selected');
+      fragment.appendChild(word);
+    });
+    span.appendChild(fragment);
+
     // run callbacks
     this.emit('finalize', this);
 
