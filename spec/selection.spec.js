@@ -80,16 +80,20 @@ describe('Selection()', () => {
       expect(span.textContent).toEqual(selection.toString());
       expect(span.textContent).toEqual('a');
       expect(span.className).toMatch(/ss-selection/);
-    })
+    });
+
+    it('prevents further updates', () => {
+      const block = () => selection.update(words[0]);
+      selection.finalize();
+      expect(block).toThrow();
+    });
   });
 
   describe('#remove()', () => {
-    // it('throws an error if selection has not been finalized', () => {
-    //   var block = () => {
-    //     selection.remove();
-    //   };
-    //   expect(block).toThrow();
-    // });
+    it('throws an error if selection has not been finalized', () => {
+      var block = () => selection.remove();
+      expect(block).toThrow();
+    });
 
     // it('removes wrapper', () => {
     //   expect(doc.getElementsByClassName('ss-selection').length).toEqual(1);

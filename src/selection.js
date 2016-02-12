@@ -14,6 +14,8 @@ module.exports = class Selection extends EventEmitter {
   constructor(el, words) {
     super();
 
+    this.isFinalized = false;
+
     const index = words.indexOf(el);
 
     this.initialIndex = index;
@@ -51,6 +53,8 @@ module.exports = class Selection extends EventEmitter {
    * @param {HTMLElement} el
    */
   update(el) {
+    if (this.isFinalized) throw 'No updating selection once it is finalized';
+
     const currentIndex = this.currentIndex;
     const nextIndex = this.words.indexOf(el);
 
@@ -75,7 +79,7 @@ module.exports = class Selection extends EventEmitter {
    * Note that DOM Manipulation only happens when current index changes.
    */
   finalize() {
-    // Object.freeze(this);
+    this.isFinalized = true;
 
     const span = document.createElement('span');
     span.className = 'ss-selection';
@@ -92,21 +96,15 @@ module.exports = class Selection extends EventEmitter {
 
     // run callbacks
     this.emit('finalize', this);
-
-    // TODO: the following is insufficient
-    // remove callbacks
-    // this.events = {};
   }
 
-  // FIXME: object freezing code doesn't work and is unnecessary
   // FIXME: callbacks are removed in finalize, but expected for onRemove
 
   /**
    * Remove this selection.
    */
   remove() {
-    // if (!Object.isFrozen(this))
-    //   throw 'Selection should be finalized before removed';
+    if (!this.isFinalized) throw 'Finalize selection before removing it.';
 
     // const wrapper = this.wrapper;
     // const parent = wrapper.parentNode;
