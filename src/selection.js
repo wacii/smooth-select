@@ -106,17 +106,16 @@ module.exports = class Selection extends EventEmitter {
   remove() {
     if (!this.isFinalized) throw 'Finalize selection before removing it.';
 
-    // const wrapper = this.wrapper;
-    // const parent = wrapper.parentNode;
-    // // childNodes is a live collection so need to make a copy
-    // const selectedWords = Array.prototype.slice.call(wrapper.childNodes);
-    //
-    // // move selected words out of wrapper
-    // selectedWords.forEach(word => parent.insertBefore(word, wrapper))
-    //
-    // // remove wrapper from DOM
-    // parent.removeChild(wrapper);
-    // // TODO: wrapper is frozen with the rest of the object so you can't delete it
+    const wrapper = this.words[this.initialIndex].parentNode;
+    if (!wrapper.classList.contains('ss-selection'))
+      throw 'Expected selection wrapper node';
+
+    const fragment = document.createDocumentFragment();
+    this.selectedWords.forEach(word => fragment.appendChild(word));
+
+    const parent = wrapper.parentNode;
+    parent.insertBefore(fragment, wrapper);
+    parent.removeChild(wrapper);
 
     // run callbacks
     this.emit('remove', this);

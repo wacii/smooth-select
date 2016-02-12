@@ -95,12 +95,12 @@ describe('Selection()', () => {
       expect(block).toThrow();
     });
 
-    // it('removes wrapper', () => {
-    //   expect(doc.getElementsByClassName('ss-selection').length).toEqual(1);
-    //   selection.finalize();
-    //   selection.remove();
-    //   expect(doc.getElementsByClassName('ss-selection').length).toEqual(0);
-    // });
+    it('removes wrapper', () => {
+      selection.finalize();
+      expect(doc.getElementsByClassName('ss-selection').length).toEqual(1);
+      selection.remove();
+      expect(doc.getElementsByClassName('ss-selection').length).toEqual(0);
+    });
 
     it('runs callbacks', () => {
       const callback = jasmine.createSpy('onRemove');
