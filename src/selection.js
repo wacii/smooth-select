@@ -1,6 +1,13 @@
 'use strict';
 
+const SELECTED = 'ss-selected';
+const SELECTION = 'ss-selection';
+
 const EventEmitter = require('events').EventEmitter;
+
+function toggleSelected (word) {
+  word.classList.toggle(SELECTED);
+}
 
 /**
  * Represents a "selection" signified by that wrapped in a span.
@@ -24,7 +31,7 @@ module.exports = class Selection extends EventEmitter {
 
     this.words = words;
 
-    el.classList.add('ss-selected');
+    el.classList.add(SELECTED);
   }
 
   get selectedWords() {
@@ -64,7 +71,6 @@ module.exports = class Selection extends EventEmitter {
     const left = (currentIndex < nextIndex ? currentIndex : nextIndex);
     const right = (currentIndex < nextIndex ? nextIndex : currentIndex);
     const middle = [left, right, this.initialIndex].sort()[1];
-    const toggleSelected = word => word.classList.toggle('ss-selected');
 
     this.words.slice(left, middle).forEach(toggleSelected);
     this.words.slice(middle + 1, right + 1).forEach(toggleSelected);
@@ -82,14 +88,14 @@ module.exports = class Selection extends EventEmitter {
     this.isFinalized = true;
 
     const span = document.createElement('span');
-    span.className = 'ss-selection';
+    span.className = SELECTION;
 
     const firstWord = this.selectedWords[0];
     firstWord.parentNode.insertBefore(span, firstWord);
 
     const fragment = document.createDocumentFragment();
     this.selectedWords.forEach(word => {
-      word.classList.remove('ss-selected');
+      word.classList.remove(SELECTED);
       fragment.appendChild(word);
     });
     span.appendChild(fragment);
@@ -98,8 +104,6 @@ module.exports = class Selection extends EventEmitter {
     this.emit('finalize', this);
   }
 
-  // FIXME: callbacks are removed in finalize, but expected for onRemove
-
   /**
    * Remove this selection.
    */
@@ -107,7 +111,7 @@ module.exports = class Selection extends EventEmitter {
     if (!this.isFinalized) throw 'Finalize selection before removing it.';
 
     const wrapper = this.words[this.initialIndex].parentNode;
-    if (!wrapper.classList.contains('ss-selection'))
+    if (!wrapper.classList.contains(SELECTION))
       throw 'Expected selection wrapper node';
 
     const fragment = document.createDocumentFragment();
@@ -121,7 +125,6 @@ module.exports = class Selection extends EventEmitter {
     this.emit('remove', this);
   }
 
-  // TODO: to what extent should a selection expose the selected elements?
   /**
    * Tests in selection contains provided DOM element.
    *
