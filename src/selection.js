@@ -1,6 +1,5 @@
 'use strict';
 
-// TODO: enforce indices in bounds
 const EventEmitter = require('events').EventEmitter;
 
 /**
@@ -23,12 +22,17 @@ module.exports = class Selection extends EventEmitter {
 
     this.words = words;
 
-    this.wrapper = document.createElement('span');
-    this.wrapper.className = 'ss-selection';
-    el.parentNode.insertBefore(this.wrapper, el);
+    el.classList.add('ss-selected');
+  }
 
-    // place marker spans
-    this._updateWrapper();
+  get selectedWords() {
+    const initialIndex = this.initialIndex;
+    const currentIndex = this.currentIndex;
+
+    const start = (currentIndex < initialIndex ? currentIndex : initialIndex);
+    const final = (currentIndex < initialIndex ? initialIndex : currentIndex);
+
+    return this.words.slice(start, final + 1);
   }
 
   get currentIndex() {
@@ -47,15 +51,22 @@ module.exports = class Selection extends EventEmitter {
    * @param {HTMLElement} el
    */
   update(el) {
-    this.previousIndex = this.currentIndex;
-    this.currentIndex = this.words.indexOf(el);
+    const currentIndex = this.currentIndex;
+    const nextIndex = this.words.indexOf(el);
 
-    // if selection has actually changed adjust markers and run callbacks
-    if (this.currentIndex !== this.previousIndex) {
-      this._updateWrapper();
-      // run callbacks
-      this.emit('update');
-    }
+    if (currentIndex === nextIndex) return;
+    this.currentIndex = nextIndex;
+
+    const left = (currentIndex < nextIndex ? currentIndex : nextIndex);
+    const right = (currentIndex < nextIndex ? nextIndex : currentIndex);
+    const middle = [left, right, this.initialIndex].sort()[1];
+    const toggleSelected = word => word.classList.toggle('ss-selected');
+
+    this.words.slice(left, middle).forEach(toggleSelected);
+    this.words.slice(middle + 1, right + 1).forEach(toggleSelected);
+
+    // run callbacks
+    this.emit('update');
   }
 
   /**
@@ -84,17 +95,17 @@ module.exports = class Selection extends EventEmitter {
     // if (!Object.isFrozen(this))
     //   throw 'Selection should be finalized before removed';
 
-    const wrapper = this.wrapper;
-    const parent = wrapper.parentNode;
-    // childNodes is a live collection so need to make a copy
-    const selectedWords = Array.prototype.slice.call(wrapper.childNodes);
-
-    // move selected words out of wrapper
-    selectedWords.forEach(word => parent.insertBefore(word, wrapper))
-
-    // remove wrapper from DOM
-    parent.removeChild(wrapper);
-    // TODO: wrapper is frozen with the rest of the object so you can't delete it
+    // const wrapper = this.wrapper;
+    // const parent = wrapper.parentNode;
+    // // childNodes is a live collection so need to make a copy
+    // const selectedWords = Array.prototype.slice.call(wrapper.childNodes);
+    //
+    // // move selected words out of wrapper
+    // selectedWords.forEach(word => parent.insertBefore(word, wrapper))
+    //
+    // // remove wrapper from DOM
+    // parent.removeChild(wrapper);
+    // // TODO: wrapper is frozen with the rest of the object so you can't delete it
 
     // run callbacks
     this.emit('remove', this);
@@ -107,9 +118,9 @@ module.exports = class Selection extends EventEmitter {
    * @param {DOMElement} el
    */
    contains(el) {
-     const selectedWords = this.words.slice(this._begin(), this._end() + 1);
-     return selectedWords.indexOf(el) !== -1;
+     return this.selectedWords.indexOf(el) !== -1;
    }
+
 
   /**
    * Returns text content of selection.
@@ -117,68 +128,6 @@ module.exports = class Selection extends EventEmitter {
    * @return {String}
    */
   toString() {
-    const selectedWords = this.words.slice(this._begin(), this._end() + 1);
-    const textArray = selectedWords.map(word => word.textContent);
-
-    return textArray.join(' ');
-  }
-
-  /**
-   * Add current selection to wrapper.
-   *
-   * @private
-   */
-  _updateWrapper() {
-    const currentBegin = this._begin();
-    const currentEnd = this._end();
-
-    // calculate previous begin and end
-    let previousBegin;
-    let previousEnd;
-    if (this.previousIndex < this.initialIndex) {
-      previousBegin = this.previousIndex;
-      previousEnd = this.initialIndex;
-    } else {
-      previousBegin = this.initialIndex;
-      previousEnd = this.previousIndex;
-    }
-
-    // add current selection to wrapper
-    const selectedWords = this.words.slice(currentBegin, currentEnd + 1);
-    const wrapper = this.wrapper;
-    selectedWords.forEach(word => wrapper.appendChild(word));
-
-    // remove words no longer selected, adding them before or after the wrapper
-    const parent = wrapper.parentNode;
-    if (previousBegin < currentBegin) {
-      // remove words from the start of the selection
-      const removedWords = this.words.slice(previousBegin, currentBegin);
-      // add words before the wrapper
-      removedWords.forEach(word => parent.insertBefore(word, wrapper));
-    } else if (currentEnd < previousEnd) {
-      // remove words from the end of the selction
-      const removedWords = this.words.slice(currentEnd + 1, previousEnd + 1);
-      const nextSibling = this.wrapper.nextSibling;
-      // add words after the wrapper, actually before its next sibling
-      removedWords.forEach(word => parent.insertBefore(word, nextSibling));
-    }
-  }
-
-  /**
-   * Returns starting index of represented range.
-   *
-   * @private
-   */
-  _begin() {
-    return Math.min(this.initialIndex, this.currentIndex);
-  }
-
-  /**
-   * Returns ending index of represent range.
-   *
-   * @private
-   */
-  _end() {
-    return Math.max(this.initialIndex, this.currentIndex);
+    return this.selectedWords.map(word => word.textContent).join(' ');
   }
 }

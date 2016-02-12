@@ -7,92 +7,57 @@ const jsdom = require('jsdom').jsdom;
 describe('Selection()', function() {
   const index = 0;
   let selection;
+  let words;
 
   beforeEach(function () {
     this.doc = jsdom('<p id="text">a b c</p>');
     global.document = this.doc;
 
-    const words = splitter(this.doc.getElementById('text'));
+    words = splitter(this.doc.getElementById('text'));
     selection = new Selection(words[index], words);
   });
 
-  it('sets initial and current index on creation', function() {
-    expect(selection.initialIndex).toEqual(index);
-    expect(selection.currentIndex).toEqual(index);
-  });
-
-  // TODO: test interaction with extraneous whitespace
-  // TODO: test selection extending backwards
-  it('manages span tags in dom', function() {
-    const wrapper = this.doc.getElementsByClassName('ss-selection')[0];
-    expect(wrapper.childNodes.length).toEqual(1);
-
-    selection.update(selection.words[1]);
-    expect(wrapper.childNodes.length).toEqual(2);
-
-    selection.update(selection.words[2]);
-    expect(wrapper.childNodes.length).toEqual(3);
-
-    selection.update(selection.words[1]);
-    expect(wrapper.childNodes.length).toEqual(2);
-  });
-
-  describe('#currentIndex=', function() {
-    it('throws an error if index is -1', function() {
-      const block = function() {
-        selection.currentIndex = -1;
-      }
-      expect(block).toThrow();
-    });
+  it('adds provided el to selection when created', () => {
+    expect(words[index].className).toMatch(/ss-selected/);
   });
 
   describe('#update()', function() {
-    beforeEach(function() {
-      spyOn(selection, '_updateWrapper');
+    it('adds classes', () => {
+      expect(words[1].className).not.toMatch(/ss-selected/);
+      selection.update(words[1]);
+      expect(words[1].className).toMatch(/ss-selected/);
+      selection.update(words[2]);
+      expect(words[1].className).toMatch(/ss-selected/);
+      expect(words[2].className).toMatch(/ss-selected/);
     });
 
-    it('updates current index', function() {
-      selection.update(selection.words[1]);
-      expect(selection.currentIndex).toEqual(1)
+    it('removes classes', () => {
+        selection.update(words[2]);
+
+        expect(words[2].className).toMatch(/ss-selected/);
+        selection.update(words[1]);
+        expect(words[2].className).not.toMatch(/ss-selected/);
+        selection.update(words[0]);
+        expect(words[1].className).not.toMatch(/ss-selected/);
+        expect(words[2].className).not.toMatch(/ss-selected/);
     });
 
-    describe('when current index changes', function() {
-      it('updates wrapper', function() {
-        selection.update(selection.words[1]);
-        expect(selection._updateWrapper).toHaveBeenCalled();
-      });
+    it('adds and removes classes', () => {
+      words.forEach(word => word.className = 'ss-word'); // reset classes
+      selection = new Selection(words[1], words);
+      selection.update(words[2]);
 
-      it('runs callbacks', function() {
-        const callback = jasmine.createSpy();
-        selection.on('update', callback);
-
-        selection.update(selection.words[1]);
-        expect(callback).toHaveBeenCalled();
-      });
-    });
-
-    describe('when current index stays the same', function() {
-      it('does not update wrapper', function() {
-        selection.update(selection.words[0]);
-        expect(selection._updateWrapper).not.toHaveBeenCalled();
-      });
-
-      it('does not run callbacks', function() {
-        const callback = jasmine.createSpy();
-        selection.on('update', callback);
-
-        selection.update(selection.words[0]);
-        expect(callback).not.toHaveBeenCalled();
-      });
+      expect(words[0].className).not.toMatch(/ss-selected/);
+      expect(words[1].className).toMatch(/ss-selected/);
+      expect(words[2].className).toMatch(/ss-selected/);
+      selection.update(words[0]);
+      expect(words[0].className).toMatch(/ss-selected/);
+      expect(words[1].className).toMatch(/ss-selected/);
+      expect(words[2].className).not.toMatch(/ss-selected/);
     });
   });
 
   describe('#finalize()', function() {
-    // it('freezes the selection', function() {
-    //   selection.finalize();
-    //   expect(Object.isFrozen(selection)).toBe(true);
-    // });
-
     it('runs callbacks', function() {
       const callback = jasmine.createSpy();
       selection.on('finalize', callback);
@@ -110,19 +75,12 @@ describe('Selection()', function() {
     //   expect(block).toThrow();
     // });
 
-    it('preserves selected words', function() {
-      expect(this.doc.getElementsByClassName('ss-word').length).toEqual(3)
-      selection.finalize()
-      selection.remove()
-      expect(this.doc.getElementsByClassName('ss-word').length).toEqual(3)
-    });
-
-    it('removes wrapper from DOM', function() {
-      expect(this.doc.getElementsByClassName('ss-selection').length).toEqual(1);
-      selection.finalize();
-      selection.remove();
-      expect(this.doc.getElementsByClassName('ss-selection').length).toEqual(0);
-    });
+    // it('removes wrapper', function() {
+    //   expect(this.doc.getElementsByClassName('ss-selection').length).toEqual(1);
+    //   selection.finalize();
+    //   selection.remove();
+    //   expect(this.doc.getElementsByClassName('ss-selection').length).toEqual(0);
+    // });
 
     it('runs callbacks', function() {
       const callback = jasmine.createSpy('onRemove');
