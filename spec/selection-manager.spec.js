@@ -13,94 +13,85 @@ describe('SelectionManager', () => {
     manager = new SelectionManager(words);
   });
 
-  describe('creating selections', () => {
-    it('clicks word not in selection', () => {
-      triggerMouseEvent(words[0], 'mousedown');
-      expect(manager.selections.length).toEqual(1);
-      triggerMouseEvent(words[1], 'mousedown');
-      expect(manager.selections.length).toEqual(2);
-    });
-  });
-
-  describe('removing selections', () => {
-    it('clicks word in existing selection', () => {
-      triggerMouseEvent(words[0], 'mousedown');
-      expect(manager.selections.length).toEqual(1);
-      triggerMouseEvent(words[0], 'mousedown');
-      expect(manager.selections.length).toEqual(0);
-    });
-  });
-
-  describe('updating selections', () => {
-    it('moves mouse over word not in selection', () => {
-      manager.createSelection(words[0]);
-      expect(manager.selections[0].toString()).toEqual('a');
-
-      triggerMouseEvent(words[1], 'mousemove');
-      expect(manager.selections[0].toString()).toEqual('a b');
-
-      triggerMouseEvent(words[0], 'mousemove');
-      expect(manager.selections[0].toString()).toEqual('a');
-
-      triggerMouseEvent(words[2], 'mousemove');
-      expect(manager.selections[0].toString()).toEqual('a b c');
-    });
-
-    it('moves mouse past or over another selection', () => {
-      manager.createSelection(words[1]);
-      manager.createSelection(words[0]);
-
-      triggerMouseEvent(words[1], 'mousemove');
-      expect(manager.currentSelection.toString()).toEqual('a');
-
-      triggerMouseEvent(words[2], 'mousemove');
-      expect(manager.currentSelection.toString()).toEqual('a');
-    });
-  });
-
-  describe('finalizing selections', () => {
-    it('release mouse button after starting selection', () => {
-      triggerMouseEvent(words[0], 'mousedown');
-      expect(manager.currentSelection).toBeDefined();
-      triggerMouseEvent(document, 'mouseup');
-      expect(manager.currentSelection).toBeFalsy();
-    });
-  });
-
   describe('#createSelection()', () => {
-    it('returns a new selection', () => {
+    it('returns selection created with provided element', () => {
       const selection = manager.createSelection(words[0]);
       expect(selection.toString()).toEqual('a');
     });
 
-    it('stores selection as currentSelection', () => {
+    it('assigns selection to currentSelection', () => {
+      manager.createSelection(words[1]);
+      expect(manager.currentSelection.toString()).toEqual('b');
+    });
+  });
+
+  describe('#updateSelection()', () => {
+    it('updates with unselected words', () => {
       manager.createSelection(words[0]);
+
+      manager.updateSelection(words[1]);
+      expect(manager.currentSelection.toString()).toEqual('a b');
+
+      manager.updateSelection(words[0]);
+      expect(manager.currentSelection.toString()).toEqual('a');
+
+      manager.updateSelection(words[2]);
+      expect(manager.currentSelection.toString()).toEqual('a b c');
+    });
+
+    it('does not update with already selected words', () => {
+      manager.createSelection(words[1]);
+      manager.updateSelection(words[2]);
+      manager.finalizeSelection();
+
+      manager.createSelection(words[0]);
+
+      manager.updateSelection(words[1]);
+      expect(manager.currentSelection.toString()).toEqual('a');
+
+      manager.updateSelection(words[2]);
       expect(manager.currentSelection.toString()).toEqual('a');
     });
 
-    it('listens to selection', () => {
-      const selection = manager.createSelection(words[0]);
-      expect(selection.listenerCount('finalize')).toEqual(1);
-      expect(selection.listenerCount('remove')).toEqual(1)
+    it('does not update with words past other selections', () => {
+      manager.createSelection(words[1]);
+      manager.finalizeSelection();
+
+      manager.createSelection(words[0]);
+
+      manager.updateSelection(words[2]);
+      expect(manager.currentSelection.toString()).toEqual('a');
     });
   });
 
-  describe('#selectionContaining()', () => {
-    it('tests whether it contains provided element', () => {
-      expect(manager.selectionContaining(words[0])).toBeFalsy();
-      const selection = manager.createSelection(words[0]);
-      // selection not added to collection until finalized
-      selection.finalize();
-      expect(manager.selectionContaining(words[0])).toEqual(selection);
-    })
+  describe('#finalizeSelection()', () => {
+    it('adds finalized selection to collection', () => {
+      manager.createSelection(words[0]);
+      manager.finalizeSelection();
+      expect(manager.selections.length).toEqual(1);
+    });
+
+    it('sets currentSelection to null', () => {
+      manager.createSelection(words[0]);
+      manager.finalizeSelection();
+      expect(manager.currentSelection).toBe(null);
+    });
   });
 
-  describe('when selection finalized', () => {
-    it('adds selection to collection', () => {
-      expect(manager.selections.length).toEqual(0);
+  describe('#removeSelection()', () => {
+    it('removes selection from dom', () => {
       const selection = manager.createSelection(words[0]);
-      selection.finalize();
-      expect(manager.selections[0]).toEqual(selection);
+      manager.finalizeSelection();
+      manager.removeSelection(selection);
+      const els = document.getElementsByClassName('ss-selection');
+      expect(els.length).toEqual(0);
+    });
+
+    it('removes selection from collection', () => {
+      const selection = manager.createSelection(words[0]);
+      manager.finalizeSelection();
+      manager.removeSelection(selection);
+      expect(manager.selections.length).toEqual(0);
     });
   });
 });
