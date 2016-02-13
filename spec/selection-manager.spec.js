@@ -4,12 +4,6 @@ const SelectionManager = require('../src/selection-manager');
 const splitter = require('../src/splitter');
 const jsdom = require('jsdom').jsdom;
 
-function triggerMouseEvent(el, eventName) {
-  const event = document.createEvent('MouseEvent');
-  event.initEvent(eventName, true, true);
-  el.dispatchEvent(event);
-}
-
 describe('SelectionManager', () => {
   let manager, words;
   beforeEach(() => {
