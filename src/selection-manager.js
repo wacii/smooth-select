@@ -1,10 +1,10 @@
 'use strict'
 
-// TODO: make this an array of selections with extra behavior
-//   as opposed to a normal object with selections as a property
+// TODO: rename selectable region
+// TODO: separate event handlers from state management
+//   you should be able to create/update/whatever without input
 
-const Selection = require(__dirname + '/selection');
-const EventEmitter = require('events').EventEmitter;
+const Selection = require('./selection');
 
 /**
  * Creates a selection manager.
@@ -12,19 +12,52 @@ const EventEmitter = require('events').EventEmitter;
  * @class
  * @param {Array[DOMElement]} words
  */
-module.exports = class SelectionManager extends EventEmitter {
-
+module.exports = class SelectionManager {
   constructor(words) {
-    super();
+    this.selections = [];
+    this.selecting = false;
 
     this.words = words;
-    this.selections = [];
 
     this.onSelectionFinalized = (selection) =>
       this.selections.push(selection)
 
     this.onSelectionRemoved = (selection) =>
       this.selections.splice(this.selections.indexOf(selection), 1)
+
+    document.addEventListener('mousedown', event => {
+      const el = event.target;
+      // assert element is a word within specified range
+      if (!el.classList.contains('ss-word')) return;
+      if (this.words.indexOf(el) === -1) return;
+
+      // remove existing selection or create a new one
+      const selection = this.selectionContaining(el);
+      if (selection)
+        this.removeSelection(selection);
+      else
+        this.createSelection(el);
+    });
+
+    document.addEventListener('mousemove', event => {
+      if (!this.currentSelection) return;
+      const el = event.target;
+
+      // assert element is a word within specified range
+      if (!el.classList.contains('ss-word')) return;
+      if (this.words.indexOf(el) === -1) return;
+      // FIXME: can't just compare words, but a range of words
+      // test for collisions
+      const selection = this.selectionContaining(el);
+      if (selection && selection !== this.currentSelection) return;
+
+      this.currentSelection.update(el);
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (!this.currentSelection) return;
+      this.finalizeSelection();
+    });
   }
 
   /**
@@ -34,10 +67,20 @@ module.exports = class SelectionManager extends EventEmitter {
    */
   createSelection(el) {
     const selection = new Selection(el, this.words);
+    this.selections.push(selection);
     selection.once('finalize', this.onSelectionFinalized);
     selection.once('remove', this.onSelectionRemoved);
-    this.emit('create');
     return this.currentSelection = selection;
+  }
+
+  removeSelection(selection) {
+    this.selections.splice(this.selections.indexOf(selection), 1);
+    selection.remove();
+  }
+
+  finalizeSelection() {
+    this.currentSelection.finalize();
+    this.currentSelection = null;
   }
 
   /**

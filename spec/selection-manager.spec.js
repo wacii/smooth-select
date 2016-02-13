@@ -1,77 +1,112 @@
 'use strict';
 
-// TODO: mock modules, you don't need the dom here
 const SelectionManager = require('../src/selection-manager');
 const splitter = require('../src/splitter');
 const jsdom = require('jsdom').jsdom;
 
-describe('SelectionManager', function() {
-  beforeEach(function() {
-    this.doc = jsdom('<p id="text">a b c</p>');
-    global.document = this.doc;
-    this.words = splitter(this.doc.getElementById('text'));
-    this.manager = new SelectionManager(this.words);
+function triggerMouseEvent(el, eventName) {
+  const event = document.createEvent('MouseEvent');
+  event.initEvent(eventName, true, true);
+  el.dispatchEvent(event);
+}
+
+describe('SelectionManager', () => {
+  let manager, words;
+  beforeEach(() => {
+    const doc = jsdom('<p id="text">a b c</p>');
+    global.document = doc;
+    words = splitter(doc.getElementById('text'));
+    manager = new SelectionManager(words);
   });
 
-  describe('#createSelection()', function() {
-    it('returns a new selection', function() {
-      const selection = this.manager.createSelection(this.words[0]);
+  describe('creating selections', () => {
+    it('clicks word not in selection', () => {
+      triggerMouseEvent(words[0], 'mousedown');
+      expect(manager.selections.length).toEqual(1);
+      triggerMouseEvent(words[1], 'mousedown');
+      expect(manager.selections.length).toEqual(2);
+    });
+  });
+
+  describe('removing selections', () => {
+    it('clicks word in existing selection', () => {
+      triggerMouseEvent(words[0], 'mousedown');
+      expect(manager.selections.length).toEqual(1);
+      triggerMouseEvent(words[0], 'mousedown');
+      expect(manager.selections.length).toEqual(0);
+    });
+  });
+
+  describe('updating selections', () => {
+    it('moves mouse over word not in selection', () => {
+      triggerMouseEvent(words[0], 'mousedown');
+      expect(manager.selections[0].toString()).toEqual('a');
+
+      triggerMouseEvent(words[1], 'mousemove');
+      expect(manager.selections[0].toString()).toEqual('a b');
+
+      triggerMouseEvent(words[0], 'mousemove');
+      expect(manager.selections[0].toString()).toEqual('a');
+
+      triggerMouseEvent(words[2], 'mousemove');
+      expect(manager.selections[0].toString()).toEqual('a b c');
+    });
+
+    it('moves mouse over word in selection', () => {
+      manager.createSelection(words[2]);
+      triggerMouseEvent(words[0], 'mousedown');
+
+      triggerMouseEvent(words[1], 'mousemove');
+      expect(manager.selections[1].toString()).toEqual('a b');
+
+      triggerMouseEvent(words[2], 'mousemove');
+      expect(manager.selections[1].toString()).toEqual('a b');
+    });
+  });
+
+  describe('finalizing selections', () => {
+    it('release mouse button after starting selection', () => {
+      triggerMouseEvent(words[0], 'mousedown');
+      expect(manager.currentSelection).toBeDefined();
+      triggerMouseEvent(document, 'mouseup');
+      expect(manager.currentSelection).toBeFalsy();
+    });
+  });
+
+  describe('#createSelection()', () => {
+    it('returns a new selection', () => {
+      const selection = manager.createSelection(words[0]);
       expect(selection.toString()).toEqual('a');
     });
 
-    it('stores selection as currentSelection', function() {
-      this.manager.createSelection(this.words[0]);
-      expect(this.manager.currentSelection.toString()).toEqual('a');
+    it('stores selection as currentSelection', () => {
+      manager.createSelection(words[0]);
+      expect(manager.currentSelection.toString()).toEqual('a');
     });
 
-    it('listens to selection', function() {
-      const selection = this.manager.createSelection(this.words[0]);
+    it('listens to selection', () => {
+      const selection = manager.createSelection(words[0]);
       expect(selection.listenerCount('finalize')).toEqual(1);
       expect(selection.listenerCount('remove')).toEqual(1)
     });
-
-    it('runs create callbacks', function() {
-      const cb1 = jasmine.createSpy('cb1');
-      const cb2 = jasmine.createSpy('cb2');
-
-      this.manager.on('create', cb1);
-      this.manager.on('update', cb2);
-      this.manager.on('finalize', cb2);
-
-      this.manager.createSelection(this.words[0]);
-      expect(cb1).toHaveBeenCalled();
-      expect(cb2).not.toHaveBeenCalled();
-    });
   });
 
-  describe('#selectionContaining()', function() {
-    it('tests whether it contains provided element', function() {
-      const manager = this.manager;
-
-      expect(manager.selectionContaining(this.words[0])).toBeFalsy();
-      const selection = manager.createSelection(this.words[0]);
+  describe('#selectionContaining()', () => {
+    it('tests whether it contains provided element', () => {
+      expect(manager.selectionContaining(words[0])).toBeFalsy();
+      const selection = manager.createSelection(words[0]);
       // selection not added to collection until finalized
       selection.finalize();
-      expect(manager.selectionContaining(this.words[0])).toEqual(selection);
+      expect(manager.selectionContaining(words[0])).toEqual(selection);
     })
   });
 
-  describe('when selection finalized', function() {
-    it('adds selection to collection', function() {
-      expect(this.manager.selections.length).toEqual(0);
-      const selection = this.manager.createSelection(this.words[0]);
+  describe('when selection finalized', () => {
+    it('adds selection to collection', () => {
+      expect(manager.selections.length).toEqual(0);
+      const selection = manager.createSelection(words[0]);
       selection.finalize();
-      expect(this.manager.selections[0]).toEqual(selection);
-    });
-  });
-
-  describe('when selection destroyed', function() {
-    it('removes selection from collection', function() {
-      const selection = this.manager.createSelection(this.words[0]);
-      selection.finalize();
-      expect(this.manager.selections[0]).toEqual(selection);
-      selection.remove();
-      expect(this.manager.selections.length).toEqual(0);
+      expect(manager.selections[0]).toEqual(selection);
     });
   });
 });
