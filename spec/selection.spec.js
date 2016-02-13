@@ -133,4 +133,15 @@ describe('Selection()', () => {
       expect(selection.toString()).toEqual('a b');
     });
   });
+
+  describe('#wordsBetween()', () => {
+    it('returns words in order to provided el', () => {
+      expect(selection.wordsBetween(words[2])).toEqual(words.slice(1, 3));
+      expect(selection.wordsBetween(words[1])).toEqual(words.slice(1, 2));
+
+      selection.currentIndex = 2;
+      expect(selection.wordsBetween(words[2])).toEqual([]);
+      expect(selection.wordsBetween(words[0])).toEqual([words[1], words[0]]);
+    })
+  })
 });

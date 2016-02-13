@@ -5,6 +5,7 @@
 //   you should be able to create/update/whatever without input
 
 const Selection = require('./selection');
+const takeWhile = require('lodash.takewhile');
 
 /**
  * Creates a selection manager.
@@ -46,12 +47,15 @@ module.exports = class SelectionManager {
       // assert element is a word within specified range
       if (!el.classList.contains('ss-word')) return;
       if (this.words.indexOf(el) === -1) return;
-      // FIXME: can't just compare words, but a range of words
-      // test for collisions
-      const selection = this.selectionContaining(el);
-      if (selection && selection !== this.currentSelection) return;
 
-      this.currentSelection.update(el);
+      // test for collisions
+      const words = takeWhile(this.currentSelection.wordsBetween(el), word => {
+        const selection = this.selectionContaining(word);
+        return !selection || selection === this.currentSelection;
+      });
+      const word = words[words.length - 1];
+
+      if (word) this.currentSelection.update(word);
     });
 
     document.addEventListener('mouseup', () => {

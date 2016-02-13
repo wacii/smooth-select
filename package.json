@@ -22,5 +22,8 @@
     "jasmine": "^2.4.1",
     "jsdom": "^6.5.1",
     "webpack": "^1.12.13"
+  },
+  "dependencies": {
+    "lodash.takewhile": "^4.1.0"
   }
 }

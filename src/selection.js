@@ -143,4 +143,16 @@ module.exports = class Selection extends EventEmitter {
   toString() {
     return this.selectedWords.map(word => word.textContent).join(' ');
   }
+
+  wordsBetween(el) {
+    const index = this.words.indexOf(el);
+    const range = []
+    if (index < this.currentIndex)
+      for (let i = this.currentIndex - 1; i >= index; i--)
+        range.push(i);
+    else
+      for (let i = this.currentIndex + 1; i <= index; i++)
+        range.push(i);
+    return range.map(i => this.words[i]);
+  }
 }

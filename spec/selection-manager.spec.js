@@ -39,7 +39,7 @@ describe('SelectionManager', () => {
 
   describe('updating selections', () => {
     it('moves mouse over word not in selection', () => {
-      triggerMouseEvent(words[0], 'mousedown');
+      manager.createSelection(words[0]);
       expect(manager.selections[0].toString()).toEqual('a');
 
       triggerMouseEvent(words[1], 'mousemove');
@@ -52,15 +52,15 @@ describe('SelectionManager', () => {
       expect(manager.selections[0].toString()).toEqual('a b c');
     });
 
-    it('moves mouse over word in selection', () => {
-      manager.createSelection(words[2]);
-      triggerMouseEvent(words[0], 'mousedown');
+    it('moves mouse past or over another selection', () => {
+      manager.createSelection(words[1]);
+      manager.createSelection(words[0]);
 
       triggerMouseEvent(words[1], 'mousemove');
-      expect(manager.selections[1].toString()).toEqual('a b');
+      expect(manager.currentSelection.toString()).toEqual('a');
 
       triggerMouseEvent(words[2], 'mousemove');
-      expect(manager.selections[1].toString()).toEqual('a b');
+      expect(manager.currentSelection.toString()).toEqual('a');
     });
   });
 
