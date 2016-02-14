@@ -6,9 +6,10 @@ const takeWhile = require('lodash.takewhile');
 // Creates, updates, and destroys selections based on user input.
 //
 module.exports = class SelectionManager {
-  constructor(words) {
+  constructor(words, nested) {
     this.selections = [];
     this.words = words;
+    this.nested = nested
 
     document.addEventListener('mousedown', event => {
       const el = event.target;
@@ -16,10 +17,13 @@ module.exports = class SelectionManager {
 
       // remove existing selection or create a new one
       const selection = this._selectionContaining(el);
-      if (selection)
-        this.removeSelection(selection);
-      else
+      if (!selection)
         this.createSelection(el);
+      else if (!this.nested)
+        this.removeSelection(selection);
+      else if (!selection.nested)
+        this.createNestedSelection(selection, el);
+
     });
 
     document.addEventListener('mousemove', event => {
@@ -68,6 +72,16 @@ module.exports = class SelectionManager {
     selection.remove();
   }
 
+  // Create nested selection.
+  //
+  createNestedSelection(el, selection) {
+    selection.nested = true;
+    const nested =
+      new NestedSelection(selection.selectedWords, this, selection);
+    nested.createSelection(el);
+    return nested;
+  }
+
   // Test if provided el is contained in an exisiting selection.
   //
   _selectionContaining(el) {
@@ -83,5 +97,7 @@ module.exports = class SelectionManager {
     });
     return words[words.length - 1];
   }
+};
 
-}
+// circular dependency, export SelectionManager before requiring
+const NestedSelection = require('./nested-selection');
