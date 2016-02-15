@@ -59,14 +59,6 @@ describe('Selection()', () => {
   });
 
   describe('#finalize()', () => {
-    it('runs callbacks', () => {
-      const callback = jasmine.createSpy();
-      selection.on('finalize', callback);
-
-      selection.finalize();
-      expect(callback).toHaveBeenCalled();
-    });
-
     it('removes selected classes from words', () => {
       const classNames = () => words.map(word => word.className).join('')
       expect(classNames()).toMatch(/ss-selected/);
@@ -100,15 +92,6 @@ describe('Selection()', () => {
       expect(doc.getElementsByClassName('ss-selection').length).toEqual(1);
       selection.remove();
       expect(doc.getElementsByClassName('ss-selection').length).toEqual(0);
-    });
-
-    it('runs callbacks', () => {
-      const callback = jasmine.createSpy('onRemove');
-      selection.on('remove', callback);
-
-      selection.finalize();
-      selection.remove();
-      expect(callback).toHaveBeenCalled();
     });
   });
 

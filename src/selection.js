@@ -1,9 +1,9 @@
 'use strict';
 
+// TODO: document, note assumptions regarding input/output
+
 const SELECTED = 'ss-selected';
 const SELECTION = 'ss-selection';
-
-const EventEmitter = require('events').EventEmitter;
 
 function toggleSelected (word) {
   word.classList.toggle(SELECTED);
@@ -16,12 +16,11 @@ function toggleSelected (word) {
  * @param {Words} words
  * @see words
  */
-module.exports = class Selection extends EventEmitter {
+module.exports = class Selection {
 
   constructor(el, words) {
-    super();
-
     this.isFinalized = false;
+    this.wrapper = null;
 
     const index = words.indexOf(el);
 
@@ -74,9 +73,6 @@ module.exports = class Selection extends EventEmitter {
 
     this.words.slice(left, middle).forEach(toggleSelected);
     this.words.slice(middle + 1, right + 1).forEach(toggleSelected);
-
-    // run callbacks
-    this.emit('update');
   }
 
   /**
@@ -100,8 +96,7 @@ module.exports = class Selection extends EventEmitter {
     });
     span.appendChild(fragment);
 
-    // run callbacks
-    this.emit('finalize', this);
+    this.wrapper = span;
   }
 
   /**
@@ -120,9 +115,6 @@ module.exports = class Selection extends EventEmitter {
     const parent = wrapper.parentNode;
     parent.insertBefore(fragment, wrapper);
     parent.removeChild(wrapper);
-
-    // run callbacks
-    this.emit('remove', this);
   }
 
   /**

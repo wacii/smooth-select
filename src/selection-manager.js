@@ -1,7 +1,10 @@
 'use strict'
 
+// TODO: extract subclass instead of conditionals involving 'nested'
+
 const Selection = require('./selection');
 const takeWhile = require('lodash.takewhile');
+const triggerCustomEvent = require('./utils').triggerCustomEvent;
 
 // Creates, updates, and destroys selections based on user input.
 //
@@ -61,6 +64,13 @@ module.exports = class SelectionManager {
   //
   finalizeSelection() {
     this.currentSelection.finalize();
+
+    if (!this.nested) {
+      const wrapper = this.currentSelection.wrapper;
+      const data = { selection: this.currentSelection.toString() }
+      triggerCustomEvent(wrapper, 'ss-selection-created', data);
+    }
+
     this.selections.push(this.currentSelection);
     this.currentSelection = null;
   }
@@ -68,8 +78,13 @@ module.exports = class SelectionManager {
   // Remove provided selection for this and the dom.
   //
   removeSelection(selection) {
+    if (!this.nested) {
+      const wrapper = selection.wrapper;
+      triggerCustomEvent(wrapper, 'ss-selection-removed');
+    }
+
+    selection.remove(); 
     this.selections.splice(this.selections.indexOf(selection), 1);
-    selection.remove();
   }
 
   // Create nested selection.
