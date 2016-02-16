@@ -1,8 +1,6 @@
 'use strict';
 
-// TODO: move to own file 'utils/trigger-custom-event'
-
-exports.triggerCustomEvent = function triggerCustomEvent(el, name, data) {
+module.exports = function triggerCustomEvent(el, name, data) {
   if (data === undefined) data = {};
 
   const event = document.createEvent('CustomEvent');

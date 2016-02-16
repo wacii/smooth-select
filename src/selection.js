@@ -5,12 +5,13 @@
 const SELECTED = 'ss-selected';
 const SELECTION = 'ss-selection';
 
-function toggleSelected (word) {
-  word.classList.toggle(SELECTED);
-}
+const range = require('./utils/range');
+const xor = require('./utils/xor');
+const wrap = require('./utils/wrap');
+const unwrap = require('./utils/unwrap');
 
 /**
- * Represents a "selection" signified by that wrapped in a span.
+ * A selection as a group of contiguous nodes, each assumed to be a word.
  *
  * @param {HTMLElement} el - Element containing start of the selection.
  * @param {Words} words
@@ -61,24 +62,18 @@ module.exports = class Selection {
   update(el) {
     if (this.isFinalized) throw 'No updating selection once it is finalized';
 
-    const currentIndex = this.currentIndex;
     const nextIndex = this.words.indexOf(el);
+    if (this.currentIndex === nextIndex) return;
 
-    if (currentIndex === nextIndex) return;
+    // words in only one of the two ranges, initial..current and initial..next
+    xor(this.words, this.initialIndex, this.currentIndex, nextIndex)
+      .forEach(word => word.classList.toggle(SELECTED));
+
     this.currentIndex = nextIndex;
-
-    const left = (currentIndex < nextIndex ? currentIndex : nextIndex);
-    const right = (currentIndex < nextIndex ? nextIndex : currentIndex);
-    const middle = [left, right, this.initialIndex].sort()[1];
-
-    this.words.slice(left, middle).forEach(toggleSelected);
-    this.words.slice(middle + 1, right + 1).forEach(toggleSelected);
   }
 
   /**
    * Prevent selection from being modified.
-   *
-   * Note that DOM Manipulation only happens when current index changes.
    */
   finalize() {
     this.isFinalized = true;
@@ -86,15 +81,8 @@ module.exports = class Selection {
     const span = document.createElement('span');
     span.className = SELECTION;
 
-    const firstWord = this.selectedWords[0];
-    firstWord.parentNode.insertBefore(span, firstWord);
-
-    const fragment = document.createDocumentFragment();
-    this.selectedWords.forEach(word => {
-      word.classList.remove(SELECTED);
-      fragment.appendChild(word);
-    });
-    span.appendChild(fragment);
+    this.selectedWords.forEach(word => word.classList.remove(SELECTED));
+    wrap(span, this.selectedWords);
 
     this.wrapper = span;
   }
@@ -104,17 +92,7 @@ module.exports = class Selection {
    */
   remove() {
     if (!this.isFinalized) throw 'Finalize selection before removing it.';
-
-    const wrapper = this.words[this.initialIndex].parentNode;
-    if (!wrapper.classList.contains(SELECTION))
-      throw 'Expected selection wrapper node';
-
-    const fragment = document.createDocumentFragment();
-    this.selectedWords.forEach(word => fragment.appendChild(word));
-
-    const parent = wrapper.parentNode;
-    parent.insertBefore(fragment, wrapper);
-    parent.removeChild(wrapper);
+    unwrap(this.wrapper);
   }
 
   /**
@@ -138,13 +116,6 @@ module.exports = class Selection {
 
   wordsBetween(el) {
     const index = this.words.indexOf(el);
-    const range = []
-    if (index < this.currentIndex)
-      for (let i = this.currentIndex - 1; i >= index; i--)
-        range.push(i);
-    else
-      for (let i = this.currentIndex + 1; i <= index; i++)
-        range.push(i);
-    return range.map(i => this.words[i]);
+    return range(index, this.currentIndex).map(i => this.words[i]);
   }
 }

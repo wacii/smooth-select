@@ -1,7 +1,7 @@
 'use strict';
 
 const SelectionManager = require('./selection-manager');
-const triggerCustomEvent = require('./utils').triggerCustomEvent;
+const triggerCustomEvent = require('./utils/trigger-custom-event');
 const slice = Array.prototype.slice;
 
 module.exports = class NestedSelection extends SelectionManager {

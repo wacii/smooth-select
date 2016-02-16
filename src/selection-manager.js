@@ -4,7 +4,7 @@
 
 const Selection = require('./selection');
 const takeWhile = require('lodash.takewhile');
-const triggerCustomEvent = require('./utils').triggerCustomEvent;
+const triggerCustomEvent = require('./utils/trigger-custom-event');
 
 // Creates, updates, and destroys selections based on user input.
 //
@@ -83,7 +83,7 @@ module.exports = class SelectionManager {
       triggerCustomEvent(wrapper, 'ss-selection-removed');
     }
 
-    selection.remove(); 
+    selection.remove();
     this.selections.splice(this.selections.indexOf(selection), 1);
   }
 

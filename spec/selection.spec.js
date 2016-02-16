@@ -125,6 +125,6 @@ describe('Selection()', () => {
       selection.currentIndex = 2;
       expect(selection.wordsBetween(words[2])).toEqual([]);
       expect(selection.wordsBetween(words[0])).toEqual([words[1], words[0]]);
-    })
-  })
+    });
+  });
 });
